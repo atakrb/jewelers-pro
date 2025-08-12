@@ -200,7 +200,7 @@ export default {
       {
         title: '📦 Envanter Yönetimi ',
         img: 'https://kuyumcum.net/Uploads/Sayfalar/kuyumcum-envanter-modulu_1762020_205638_2.PNG',
-        to: { name: 'envantory' }
+        to: { name: 'inventory' }
       },
       {
         title: '💰 Satış & Müşteri Modülü',
