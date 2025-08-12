@@ -1,4 +1,4 @@
-# zirve-task
+# jewelers-pro w/ATA KARABULUT
 
 ## Project setup
 ```
