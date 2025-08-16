@@ -1,528 +1,733 @@
 <template>
-  <v-app>
-    <v-app-bar app color="indigo darken-2" dark flat>
-      <!-- Sol: Hamburger -->
-      <v-app-bar-nav-icon @click="drawer = !drawer" />
-
-      <v-toolbar-title class="font-weight-bold">Ürün Alış Modülü</v-toolbar-title>
-      <v-spacer></v-spacer>
-
-      <!-- Saat -->
-      <v-chip small color="deep-purple accent-2" text-color="white">{{ nowStr }}</v-chip>
-
-      <!-- Tema -->
-      <v-btn icon @click="$vuetify.theme.dark = !$vuetify.theme.dark">
-        <v-icon>mdi-theme-light-dark</v-icon>
-      </v-btn>
-
-      <!-- Sağ: Profil menüsü -->
-      <v-menu offset-y left bottom>
-        <template v-slot:activator="{ on, attrs }">
-          <v-btn icon v-bind="attrs" v-on="on" :title="user.name">
-            <v-avatar size="32">
-              <img :src="user.avatar" alt="avatar">
-            </v-avatar>
-          </v-btn>
-        </template>
-
-        <v-list dense>
-          <v-list-item :to="routes.profile || undefined" :href="routes.profile ? undefined : '#'" >
-            <v-list-item-icon><v-icon>mdi-account-circle</v-icon></v-list-item-icon>
-            <v-list-item-title>Profil</v-list-item-title>
-          </v-list-item>
-
-          <v-list-item :to="routes.iletisim || undefined" :href="routes.iletisimHref" target="_blank">
-            <v-list-item-icon><v-icon>mdi-email</v-icon></v-list-item-icon>
-            <v-list-item-title>İletişim</v-list-item-title>
-          </v-list-item>
-
-          <v-divider class="my-1" />
-
-          <v-list-item @click="logout">
-            <v-list-item-icon><v-icon color="red">mdi-logout</v-icon></v-list-item-icon>
-            <v-list-item-title class="red--text text--darken-1">Çıkış Yap</v-list-item-title>
-          </v-list-item>
-        </v-list>
-      </v-menu>
-    </v-app-bar>
-    <v-navigation-drawer v-model="drawer" app temporary>
-      <!-- Kullanıcı kartı -->
-      <v-list two-line subheader>
-        <v-subheader>Hesap</v-subheader>
-        <v-list-item>
-          <v-list-item-avatar>
-            <img :src="user.avatar" alt="">
+  <v-container fluid class="px-0 py-0" :style="{ '--accent': accent }">
+    <!-- SOL MENÜ -->
+    <v-navigation-drawer
+        v-model="drawer"
+        :mini-variant.sync="mini"
+        :permanent="$vuetify.breakpoint.lgAndUp"
+        expand-on-hover
+        app
+        width="280"
+        class="elevated-drawer"
+    >
+      <v-list dense>
+        <v-list-item two-line class="mb-1">
+          <v-list-item-avatar size="30">
+            <v-icon color="white">mdi-diamond-stone</v-icon>
           </v-list-item-avatar>
           <v-list-item-content>
-            <v-list-item-title class="font-weight-medium">{{ user.name }}</v-list-item-title>
-            <v-list-item-subtitle>{{ user.email }}</v-list-item-subtitle>
+            <v-list-item-title class="font-weight-bold">Jewelers Pro</v-list-item-title>
+            <v-list-item-subtitle>Mağaza Paneli</v-list-item-subtitle>
           </v-list-item-content>
         </v-list-item>
-      </v-list>
 
-      <v-divider class="mb-2"/>
+        <v-divider class="mb-2" />
 
-      <!-- Navigasyon -->
-      <v-list nav dense>
-        <v-list-item :to="{ name: 'home' }" exact>
-          <v-list-item-icon><v-icon>mdi-home</v-icon></v-list-item-icon>
-          <v-list-item-title>Ana Sayfa</v-list-item-title>
+        <v-list-item
+            v-for="it in drawerItems"
+            :key="it.to"
+            :to="{ name: it.to }"
+            link exact
+            class="rounded-lg"
+        >
+          <v-list-item-icon><v-icon>{{ it.icon }}</v-icon></v-list-item-icon>
+          <v-list-item-title>{{ it.title }}</v-list-item-title>
         </v-list-item>
 
-        <v-list-item :to="{ name: 'itemBuy' }">
-          <v-list-item-icon><v-icon>mdi-cart-arrow-down</v-icon></v-list-item-icon>
-          <v-list-item-title>Müşteriden Alım</v-list-item-title>
+        <v-divider class="my-2" />
+
+        <v-list-item class="rounded-lg">
+          <v-list-item-icon><v-icon>mdi-palette</v-icon></v-list-item-icon>
+          <v-list-item-title>Vurgu</v-list-item-title>
+          <v-spacer/>
+          <v-btn
+              v-for="c in accents"
+              :key="c"
+              icon small
+              :style="{ color: c }"
+              @click="setAccent(c)"
+          ><v-icon>mdi-circle</v-icon></v-btn>
         </v-list-item>
 
-        <v-list-item :to="{ name: 'sellAndInventory' }">
-          <v-list-item-icon><v-icon>mdi-cash-register</v-icon></v-list-item-icon>
-          <v-list-item-title>Satış & Envanter</v-list-item-title>
+        <v-list-item class="rounded-lg" @click="cycleTheme">
+          <v-list-item-icon><v-icon>mdi-theme-light-dark</v-icon></v-list-item-icon>
+          <v-list-item-title>Tema</v-list-item-title>
+          <v-spacer/><v-chip x-small>{{ themeLabel }}</v-chip>
         </v-list-item>
 
-        <!-- İsteğe bağlı: Profil -->
-        <v-list-item :to="routes.profile || undefined" :href="routes.profile ? undefined : '#'" >
-          <v-list-item-icon><v-icon>mdi-account</v-icon></v-list-item-icon>
-          <v-list-item-title>Profil</v-list-item-title>
-        </v-list-item>
-
-        <!-- İletişim -->
-        <v-list-item :to="routes.iletisim || undefined" :href="routes.iletisimHref" target="_blank">
-          <v-list-item-icon><v-icon>mdi-phone</v-icon></v-list-item-icon>
-          <v-list-item-title>İletişim</v-list-item-title>
-        </v-list-item>
-
-        <!-- Çıkış -->
-        <v-list-item @click="logout">
-          <v-list-item-icon><v-icon color="red">mdi-logout</v-icon></v-list-item-icon>
-          <v-list-item-title class="red--text text--darken-1">Çıkış Yap</v-list-item-title>
+        <v-list-item :to="{ name:'musteriBilgi' }" class="rounded-lg" link>
+          <v-list-item-icon><v-icon>mdi-lifebuoy</v-icon></v-list-item-icon>
+          <v-list-item-title>Destek</v-list-item-title>
         </v-list-item>
       </v-list>
     </v-navigation-drawer>
 
+    <!-- HERO -->
+    <div class="hero">
+      <div class="hero-glow" :style="{ '--accent': accent }"></div>
+      <div class="hero-content">
+        <div class="overline mb-1">JEWELERS PRO</div>
+        <h2 class="hero-title">Müşteriler & Sipariş Özeti</h2>
+        <div class="hero-sub">Müşteri kayıtları, siparişler ve durumlar — tek ekranda.</div>
+      </div>
+    </div>
 
-    <v-main>
-      <v-container fluid class="py-6">
-        <v-row>
-          <!-- SOL: Satış -->
-          <v-col cols="12" md="7">
-            <v-card class="pa-4 soft-card" outlined>
-              <div class="d-flex align-center mb-2">
-                <h2 class="mb-0">Satış</h2>
-                <v-spacer></v-spacer>
-                <v-btn color="green" dark :disabled="cart.items.length===0" @click="completeSale">
-                  <v-icon left>mdi-cash-register</v-icon>Satışı Tamamla
-                </v-btn>
-              </div>
+    <!-- HIZLI AKSİYONLAR -->
+    <v-container class="pt-4 pb-0">
+      <v-slide-group show-arrows>
+        <v-slide-item v-for="qa in quickActions" :key="qa.key">
+          <v-card
+              class="qa"
+              :to="qa.to ? { name: qa.to } : undefined"
+              :link="!!qa.to"
+              :style="{ borderColor: accent }"
+              @click="qa.click && qa.click()"
+          >
+            <v-icon class="mr-2" :color="accent">{{ qa.icon }}</v-icon>
+            <div>
+              <div class="subtitle-2 font-weight-bold">{{ qa.title }}</div>
+              <div class="caption grey--text">{{ qa.subtitle }}</div>
+            </div>
+            <v-spacer/>
+            <v-chip x-small :color="accent" text-color="white">{{ qa.key }}</v-chip>
+          </v-card>
+        </v-slide-item>
+      </v-slide-group>
+    </v-container>
 
-              <!-- Ürün Arama -->
-              <v-row class="mb-2">
-                <v-col cols="12" md="8">
-                  <v-autocomplete
-                      v-model="selectedId"
-                      :items="filteredInventory"
-                      item-text="_label"
-                      item-value="id"
-                      label="Ürün ara (Ad/SKU/Barkod)"
-                      prepend-inner-icon="mdi-magnify"
-                      dense clearable :filter="invFilter" hide-no-data
-                  />
-                </v-col>
-                <v-col cols="6" md="2">
-                  <v-text-field v-model.number="addQty" type="number" min="1" label="Adet" dense />
-                </v-col>
-                <v-col cols="6" md="2" class="d-flex align-end">
-                  <v-btn block color="indigo" dark :disabled="!selectedProduct || addQty<=0" @click="addToCart">
-                    <v-icon left>mdi-cart-plus</v-icon>Ekle
-                  </v-btn>
-                </v-col>
-              </v-row>
-
-              <!-- Sepet -->
-              <v-data-table :headers="cartHeaders" :items="cart.items" item-key="rowId" class="soft-card" dense :items-per-page="5" outlined>
-                <template v-slot:item.qty="{ item }">
-                  <v-text-field class="dense" v-model.number="item.qty" type="number" min="1" @input="recalcRow(item)" />
-                </template>
-                <template v-slot:item.discountPct="{ item }">
-                  <v-text-field class="dense" v-model.number="item.discountPct" type="number" min="0" max="100" suffix="%" @input="recalcRow(item)" />
-                </template>
-                <template v-slot:item.markupPct="{ item }">
-                  <v-text-field class="dense" v-model.number="item.markupPct" type="number" min="0" max="300" suffix="%" @input="recalcRow(item)" />
-                </template>
-                <template v-slot:item.unitPriceEff="{ item }"><span class="nowrap">{{ money(item.unitPriceEff) }}</span></template>
-                <template v-slot:item.subtotal="{ item }"><span class="nowrap">{{ money(item.subtotal) }}</span></template>
-                <template v-slot:item.profit="{ item }"><span class="nowrap">{{ money(item.profit) }}</span></template>
-                <template v-slot:item.actions="{ item }">
-                  <v-btn icon @click="removeFromCart(item)"><v-icon color="red">mdi-delete</v-icon></v-btn>
-                </template>
-              </v-data-table>
-
-              <!-- Özet -->
-              <v-card class="mt-3 pa-4 soft-card" outlined>
-                <v-row>
-                  <v-col cols="12" md="4">
-                    <div class="subtitle-2 text--secondary">Toplam Tutar</div>
-                    <div class="display-1 font-weight-bold">{{ money(cart.total) }}</div>
-                  </v-col>
-                  <v-col cols="6" md="4">
-                    <div class="subtitle-2 text--secondary">Toplam Maliyet (COGS)</div>
-                    <div class="headline font-weight-bold">{{ money(cart.cogs) }}</div>
-                  </v-col>
-                  <v-col cols="6" md="4">
-                    <div class="subtitle-2 text--secondary">Kâr</div>
-                    <div class="headline font-weight-bold">{{ money(cart.profit) }}</div>
-                  </v-col>
-                </v-row>
-              </v-card>
-            </v-card>
+    <!-- FİLTRELER -->
+    <v-container class="pt-4 pb-0">
+      <v-sheet class="filters-sheet">
+        <v-row dense>
+          <v-col cols="12" md="4">
+            <v-text-field
+                v-model="filters.q"
+                dense outlined clearable hide-details
+                label="Ara (ad, telefon, e-posta, adres)"
+                prepend-inner-icon="mdi-magnify"
+            />
           </v-col>
-
-          <!-- SAĞ: Envanter & Gün Sonu -->
-          <v-col cols="12" md="5">
-            <v-card class="pa-4 soft-card" outlined>
-              <div class="d-flex align-center mb-2">
-                <h2 class="mb-0">Envanter</h2>
-                <v-spacer></v-spacer>
-                <v-btn color="indigo" outlined @click="dialogs.addItem=true"><v-icon left>mdi-plus</v-icon>Ürün Ekle</v-btn>
-              </div>
-              <v-text-field v-model="invSearch" dense clearable prepend-inner-icon="mdi-magnify" label="Envanterde Ara" class="mb-2" />
-              <v-data-table :headers="invHeaders" :items="filteredInventory" :items-per-page="5" dense outlined class="soft-card">
-                <template v-slot:item.unitPrice="{ item }"><span class="nowrap">{{ money(item.unitPrice) }}</span></template>
-                <template v-slot:item.unitCost="{ item }"><span class="nowrap">{{ money(item.unitCost) }}</span></template>
-                <template v-slot:item.actions="{ item }">
-                  <v-btn icon @click="removeInventory(item)"><v-icon color="red">mdi-delete</v-icon></v-btn>
-                </template>
-              </v-data-table>
-            </v-card>
-
-            <v-card class="mt-4 pa-4 soft-card" outlined>
-              <div class="d-flex align-center mb-2"><h2 class="mb-0">Gün Sonu</h2></div>
-              <v-row>
-                <v-col cols="12" md="4">
-                  <div class="subtitle-2 text--secondary">Satış Toplam</div>
-                  <div class="headline font-weight-bold">{{ money(day.total) }}</div>
-                </v-col>
-                <v-col cols="6" md="4">
-                  <div class="subtitle-2 text--secondary">Maliyet</div>
-                  <div class="subtitle-1 font-weight-bold">{{ money(day.cogs) }}</div>
-                </v-col>
-                <v-col cols="6" md="4">
-                  <div class="subtitle-2 text--secondary">Net Kâr</div>
-                  <div class="subtitle-1 font-weight-bold">{{ money(day.profit) }}</div>
-                </v-col>
-              </v-row>
-              <v-data-table :headers="dayHeaders" :items="day.sales" :items-per-page="5" dense outlined class="soft-card mt-2">
-                <template v-slot:item.total="{ item }"><span class="nowrap">{{ money(item.total) }}</span></template>
-                <template v-slot:item.cogs="{ item }"><span class="nowrap">{{ money(item.cogs) }}</span></template>
-                <template v-slot:item.profit="{ item }"><span class="nowrap">{{ money(item.profit) }}</span></template>
-              </v-data-table>
-            </v-card>
+          <v-col cols="6" md="2">
+            <v-select v-model="filters.platform" :items="platformOptions" dense outlined hide-details clearable label="Platform"/>
+          </v-col>
+          <v-col cols="6" md="2">
+            <v-select v-model="filters.status" :items="statusOptions" dense outlined hide-details clearable label="Durum"/>
+          </v-col>
+          <v-col cols="6" md="2">
+            <v-text-field v-model="filters.startDate" type="date" dense outlined hide-details label="Başlangıç"/>
+          </v-col>
+          <v-col cols="6" md="2">
+            <v-text-field v-model="filters.endDate" type="date" dense outlined hide-details label="Bitiş"/>
           </v-col>
         </v-row>
 
-        <!-- Ürün Ekle Dialog -->
-        <v-dialog v-model="dialogs.addItem" max-width="520">
-          <v-card>
-            <v-card-title class="headline">Yeni Ürün</v-card-title>
-            <v-card-text>
-              <v-form ref="addForm" v-model="valid.add">
-                <v-text-field v-model="addForm.sku" label="SKU" :rules="[r.req]" dense />
-                <v-text-field v-model="addForm.name" label="Ad" :rules="[r.req]" dense />
-                <v-text-field v-model="addForm.barcode" label="Barkod" dense />
-                <v-text-field v-model.number="addForm.qty" label="Stok" type="number" min="0" :rules="[r.nonneg]" dense />
-                <v-text-field v-model.number="addForm.unitCost" label="Birim Maliyet" type="number" min="0" :rules="[r.nonneg]" dense />
-                <v-text-field v-model.number="addForm.unitPrice" label="Birim Fiyat" type="number" min="0" :rules="[r.nonneg]" dense />
-              </v-form>
-            </v-card-text>
-            <v-card-actions>
-              <v-spacer></v-spacer>
-              <v-btn text @click="dialogs.addItem=false">İptal</v-btn>
-              <v-btn color="indigo" dark :disabled="!valid.add" @click="addInventory">Ekle</v-btn>
-            </v-card-actions>
-          </v-card>
-        </v-dialog>
+        <div class="d-flex flex-wrap mt-3">
+          <v-chip small class="mr-2 mb-1" :color="quick==='today' ? 'indigo' : ''" :text-color="quick==='today' ? 'white' : ''" @click="setQuick('today')">Bugün</v-chip>
+          <v-chip small class="mr-2 mb-1" :color="quick==='7d' ? 'indigo' : ''" :text-color="quick==='7d' ? 'white' : ''" @click="setQuick('7d')">7 Gün</v-chip>
+          <v-chip small class="mr-2 mb-1" :color="quick==='month' ? 'indigo' : ''" :text-color="quick==='month' ? 'white' : ''" @click="setQuick('month')">Bu Ay</v-chip>
 
-        <v-snackbar v-model="snack.show" :color="snack.color" timeout="2000">{{ snack.text }}</v-snackbar>
-      </v-container>
-    </v-main>
-  </v-app>
+          <v-spacer/>
+          <v-btn small class="mr-2 glass-btn" @click="resetFilters"><v-icon left small>mdi-filter-off</v-icon> Sıfırla</v-btn>
+          <v-btn small :color="accent" dark @click="openCustomerDialog()"><v-icon left small>mdi-account-plus</v-icon> Yeni Müşteri</v-btn>
+        </div>
+      </v-sheet>
+    </v-container>
+
+    <!-- LİSTE -->
+    <v-container>
+      <v-card outlined class="table-card">
+        <v-data-table
+            :headers="headers"
+            :items="filteredCustomers"
+            :items-per-page="10"
+            item-key="id"
+            show-expand
+            :expanded.sync="expanded"
+            dense fixed-header height="620"
+            class="px-2 elevated-datatable"
+        >
+          <template v-slot:item.customer="{ item }">
+            <div class="font-weight-medium">{{ item.fullName }}</div>
+            <div class="caption grey--text">#{{ item.id }}</div>
+          </template>
+
+          <template v-slot:item.contact="{ item }">
+            <div>{{ item.phone || '-' }}</div>
+            <div class="caption grey--text">{{ item.email || '-' }}</div>
+          </template>
+
+          <template v-slot:item.addressShort="{ item }">
+            {{ item.addressShort || '-' }}
+          </template>
+
+          <template v-slot:item.lastOrderAt="{ item }">
+            {{ fmtDateTime(item.lastOrderAt) }}
+          </template>
+
+          <template v-slot:item.platforms="{ item }">
+            <div class="d-flex flex-wrap">
+              <v-chip
+                  v-for="(p,i) in item.platforms"
+                  :key="p + i"
+                  x-small class="mr-1 mb-1"
+                  :color="accent" text-color="white"
+              >{{ p }}</v-chip>
+              <span v-if="item.platforms.length===0" class="caption grey--text">-</span>
+            </div>
+          </template>
+
+          <template v-slot:item.shippingStatus="{ item }">
+            <v-chip :color="statusColor(item.shippingStatus)" text-color="white" small>
+              {{ item.shippingStatus || '-' }}
+            </v-chip>
+          </template>
+
+          <template v-slot:item.progress="{ item }">
+            <v-chip :color="item.isDone ? 'teal' : 'orange'" text-color="white" small>
+              {{ item.isDone ? 'Tamamlandı' : 'Devam Ediyor' }}
+            </v-chip>
+          </template>
+
+          <template v-slot:item.actions="{ item }">
+            <v-btn icon small @click="openCustomerDialog(item)"><v-icon small>mdi-account-edit</v-icon></v-btn>
+            <v-btn icon small @click="openOrderDialog(null, item)"><v-icon small>mdi-cart-plus</v-icon></v-btn>
+            <v-btn icon small @click="removeCustomer(item)"><v-icon small>mdi-delete</v-icon></v-btn>
+          </template>
+
+          <!-- GENİŞLETİLEN SATIR -->
+          <template v-slot:expanded-item="{ headers, item }">
+            <td :colspan="headers.length" class="pa-0">
+              <v-divider />
+              <v-card flat class="pa-3">
+                <div class="d-flex align-center mb-2">
+                  <div class="subtitle-2 font-weight-bold">Siparişler — {{ item.fullName }}</div>
+                  <v-spacer/>
+                  <v-btn x-small :color="accent" dark @click="openOrderDialog(null, item)">
+                    <v-icon left small>mdi-plus</v-icon> Yeni Sipariş
+                  </v-btn>
+                </div>
+
+                <v-data-table
+                    :headers="orderHeaders"
+                    :items="item.orders"
+                    dense hide-default-footer
+                >
+                  <template v-slot:item.tarih="{ item: o }">{{ fmtDateTime(o.date) }}</template>
+                  <template v-slot:item.tutar="{ item: o }">{{ tl(o.total) }}</template>
+                  <template v-slot:item.status="{ item: o }">
+                    <v-chip :color="statusColor(o.status)" text-color="white" x-small>{{ o.status }}</v-chip>
+                  </template>
+                  <template v-slot:item.teslim="{ item: o }">
+                    <span v-if="o.deliveredAt">{{ fmtDateTime(o.deliveredAt) }}</span>
+                    <span v-else class="grey--text">-</span>
+                  </template>
+                  <template v-slot:item.ops="{ item: o }">
+                    <v-btn icon x-small @click="openOrderDialog(o)"><v-icon small>mdi-pencil</v-icon></v-btn>
+                    <v-btn icon x-small @click="removeOrder(item, o)"><v-icon small>mdi-delete</v-icon></v-btn>
+                  </template>
+                </v-data-table>
+              </v-card>
+            </td>
+          </template>
+
+          <!-- ÖZET -->
+          <template v-slot:footer.prepend>
+            <div class="px-4 py-2">
+              <v-chip small class="mr-2">Müşteri: {{ filteredCustomers.length }}</v-chip>
+              <v-chip small color="teal" text-color="white" class="mr-2">Toplam Sipariş: {{ totalOrders }}</v-chip>
+              <v-chip small color="deep-purple" text-color="white">Ciro (filtre): {{ tl(totalRevenue) }}</v-chip>
+            </div>
+          </template>
+        </v-data-table>
+      </v-card>
+    </v-container>
+
+    <!-- MÜŞTERİ DİYALOĞU -->
+    <v-dialog v-model="dialogs.customer" max-width="560px">
+      <v-card>
+        <v-card-title class="subtitle-1 font-weight-bold">
+          {{ customerForm.id ? 'Müşteri Düzenle' : 'Yeni Müşteri' }}
+        </v-card-title>
+        <v-card-text>
+          <v-form ref="customerFormRef">
+            <v-text-field v-model="customerForm.fullName" label="Ad Soyad" dense outlined required />
+            <v-text-field v-model="customerForm.phone" label="Telefon" dense outlined />
+            <v-text-field v-model="customerForm.email" label="E-posta" dense outlined />
+            <v-text-field v-model="customerForm.addressShort" label="Kısa Adres" dense outlined />
+          </v-form>
+        </v-card-text>
+        <v-card-actions class="px-4 pb-4">
+          <v-btn text @click="dialogs.customer=false">Vazgeç</v-btn>
+          <v-spacer/>
+          <v-btn :color="accent" dark @click="saveCustomer" :disabled="!customerForm.fullName">Kaydet</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <!-- SİPARİŞ DİYALOĞU -->
+    <v-dialog v-model="dialogs.order" max-width="720px">
+      <v-card>
+        <v-card-title class="subtitle-1 font-weight-bold">
+          {{ orderForm.id ? 'Sipariş Düzenle' : 'Yeni Sipariş' }}
+        </v-card-title>
+        <v-card-text>
+          <v-form ref="orderFormRef">
+            <v-row dense>
+              <v-col cols="12" md="6">
+                <v-select
+                    v-model="orderForm.customerId"
+                    :items="customers.map(c=>({ text: c.fullName + ' (#'+c.id+')', value: c.id }))"
+                    label="Müşteri"
+                    dense outlined
+                    :disabled="!!orderFixedCustomer"
+                    :rules="[v=>!!v || 'Zorunlu']" required
+                />
+              </v-col>
+              <v-col cols="6" md="3">
+                <v-text-field v-model="orderForm.date" type="datetime-local" label="Tarih" dense outlined />
+              </v-col>
+              <v-col cols="6" md="3">
+                <v-select v-model="orderForm.platform" :items="platformMaster" label="Platform" dense outlined clearable />
+              </v-col>
+            </v-row>
+
+            <v-row dense>
+              <v-col cols="4" md="2"><v-text-field v-model.number="orderForm.items" type="number" min="1" label="Adet" dense outlined /></v-col>
+              <v-col cols="8" md="4"><v-text-field v-model.number="orderForm.total" type="number" min="0" label="Tutar" dense outlined /></v-col>
+              <v-col cols="6" md="3"><v-text-field v-model="orderForm.cargoCompany" label="Kargo" dense outlined /></v-col>
+              <v-col cols="6" md="3"><v-text-field v-model="orderForm.trackingNo" label="Takip No" dense outlined /></v-col>
+            </v-row>
+
+            <v-row dense>
+              <v-col cols="6" md="3">
+                <v-select v-model="orderForm.status" :items="statusOptions" label="Durum" dense outlined />
+              </v-col>
+              <v-col cols="6" md="4">
+                <v-text-field v-model="orderForm.deliveredAt" type="datetime-local" label="Teslim Tarihi" dense outlined />
+              </v-col>
+            </v-row>
+            <div class="caption grey--text">* Müşteri seçmeden kaydedemezsin.</div>
+          </v-form>
+        </v-card-text>
+        <v-card-actions class="px-4 pb-4">
+          <v-btn text @click="dialogs.order=false">Vazgeç</v-btn>
+          <v-spacer/>
+          <v-btn :color="accent" dark :disabled="!orderForm.customerId" @click="saveOrder">Kaydet</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <v-snackbar v-model="snack.show" :color="snack.color" timeout="2200">{{ snack.text }}</v-snackbar>
+  </v-container>
 </template>
+
 <script>
+import { get } from '@/utils/harddata'
+import { priceCalc } from '@/utils/pricing'
+
 export default {
-  name: "SellAndInventory",
+  name: "MusteriBilgileriPage",
   data() {
     return {
-      drawer: false,
-      group: 0,
-
-      user: {
-        name: 'Misafir Kullanıcı',
-        email: 'user@example.com',
-        avatar: 'https://ui-avatars.com/api/?name=MK&background=4c51bf&color=fff'
-      },
-      routes: {
-        profile: null,
-        iletisim: null,
-        iletisimHref: 'mailto:destek@firma.com?subject=İletişim'
-      },
-      computed: {
-        nowStr(){ return this.now.toLocaleString('tr-TR') }
-      },
-      mounted(){
-        this._timerId = setInterval(() => { this.now = new Date() }, 1000)
-      },
-      beforeDestroy(){
-        if (this._timerId) clearInterval(this._timerId)
-      },
-      // UI
-      now: new Date(),
-      timerId: null,
-
-      // arama & seçim
-      invSearch: "",
-      selectedId: null,
-      addQty: 1,
-
-      // sepet
-      cart: { items: [], total: 0, cogs: 0, profit: 0 },
-
-      // envanter (örnek veri)
-      inventory: [
-        { id: 1, sku: "SKU-1001", name: "Altın Yüzük",   barcode: "869000000001", qty: 10, unitCost: 1200, unitPrice: 1500 },
-        { id: 2, sku: "SKU-1002", name: "Gümüş Kolye",   barcode: "869000000002", qty: 15, unitCost:  300, unitPrice:  500 },
-        { id: 3, sku: "SKU-1003", name: "Pırlanta Küpe", barcode: "869000000003", qty:  5, unitCost: 5000, unitPrice: 6500 },
+      // tema
+      drawer: this.$vuetify?.breakpoint?.lgAndUp || false,
+      mini: this.$vuetify?.breakpoint?.lgAndUp || false,
+      accent: localStorage.getItem('jp_accent') || '#5865F2',
+      accents: ['#5865F2','#0EA5E9','#22C55E','#F59E0B','#EF4444','#8B5CF6'],
+      drawerItems: [
+        { title:"Ana Sayfa",    icon:"mdi-view-dashboard-outline", to:"home" },
+        { title:"Satış",        icon:"mdi-cash-register",          to:"satis" },
+        { title:"Raporlar",     icon:"mdi-file-chart",             to:"raporlar" },
+        { title:"Toptancı",     icon:"mdi-storefront-outline",     to:"toptanci" },
+        { title:"Kategoriler",  icon:"mdi-shape-outline",          to:"kategoriler" },
+        { title:"Ürünler",      icon:"mdi-package-variant-closed", to:"urunler" },
+        { title:"Müşteri Bilgi",icon:"mdi-account-group-outline",  to:"musteriBilgi" },
+        { title:"Stok",         icon:"mdi-archive-outline",        to:"stok" },
+        { title:"Kargo",        icon:"mdi-truck-outline",          to:"kargo" },
+      ],
+      quick: 'today',
+      quickActions: [
+        { key:'M', icon:'mdi-account-plus', title:'Yeni Müşteri', subtitle:'Kayıt oluştur', click:()=>this.openCustomerDialog() },
+        { key:'S', icon:'mdi-cart-plus',    title:'Yeni Sipariş', subtitle:'Müşteriye ekle', click:()=>this.openOrderDialog() },
+        { key:'F', icon:'mdi-filter',       title:'Bugün',        subtitle:'Tarih filtresi', click:()=>this.setQuick('today') },
+        { key:'7', icon:'mdi-calendar-range', title:'Son 7 Gün',  subtitle:'Hızlı aralık', click:()=>this.setQuick('7d') },
       ],
 
-      // gün sonu
-      day: { sales: [], total: 0, cogs: 0, profit: 0 },
+      // veri
+      customers: [],
+      filters: { q: "", platform: null, status: null, startDate: "", endDate: "" },
 
-      // dialog & form
-      dialogs: { addItem: false },
-      valid: { add: false },
-      addForm: { sku: "", name: "", barcode: "", qty: 0, unitCost: 0, unitPrice: 0 },
+      headers: [
+        { text: "Müşteri", value: "customer", width: 200 },
+        { text: "İletişim", value: "contact", width: 220 },
+        { text: "Kısa Adres", value: "addressShort", width: 160 },
+        { text: "Son Sipariş", value: "lastOrderAt", width: 150 },
+        { text: "Sipariş Sayısı", value: "orderCount", width: 120, align: "end" },
+        { text: "Platform(lar)", value: "platforms" },
+        { text: "Kargo Durumu", value: "shippingStatus", width: 140 },
+        { text: "Süreç", value: "progress", width: 120 },
+        { text: "", value: "actions", sortable: false, width: 120, align: "end" },
+      ],
+      orderHeaders: [
+        { text: "Tarih", value: "tarih", width: 170 },
+        { text: "No", value: "id", width: 80 },
+        { text: "Platform", value: "platform", width: 120 },
+        { text: "Adet", value: "items", width: 80, align: "end" },
+        { text: "Tutar", value: "tutar", width: 120, align: "end" },
+        { text: "Kargo", value: "cargoCompany", width: 130 },
+        { text: "Takip No", value: "trackingNo", width: 130 },
+        { text: "Durum", value: "status", width: 120 },
+        { text: "Teslim", value: "teslim", width: 170 },
+        { text: "", value: "ops", sortable: false, width: 90, align: "end" },
+      ],
 
-      // basit kurallar
-      r: {
-        req: v => !!v || "Zorunlu",
-        nonneg: v => (v === 0 || !!v) && Number(v) >= 0 || "0 veya daha büyük olmalı"
+      expanded: [],
+      dialogs: { customer: false, order: false },
+      customerForm: { id: null, fullName: "", phone: "", email: "", addressShort: "" },
+      orderForm: {
+        id: null, customerId: null,
+        date: "", platform: "", items: 1, total: 0,
+        cargoCompany: "", trackingNo: "", status: "Hazırlanıyor",
+        deliveredAt: ""
       },
+      orderFixedCustomer: null,
 
-      // snackbar
-      snack: { show: false, text: "", color: "success" },
-
-      // tablolar
-      cartHeaders: [
-        { text: "SKU",          value: "sku" },
-        { text: "Ad",           value: "name" },
-        { text: "Stok",         value: "stock" },
-        { text: "Adet",         value: "qty" },
-        { text: "İndirim",      value: "discountPct" },
-        { text: "Zam",          value: "markupPct" },
-        { text: "Eff. Fiyat",   value: "unitPriceEff" },
-        { text: "Ara Toplam",   value: "subtotal" },
-        { text: "Kâr",          value: "profit" },
-        { text: "",             value: "actions", sortable: false },
-      ],
-      invHeaders: [
-        { text: "SKU",         value: "sku" },
-        { text: "Ad",          value: "name" },
-        { text: "Barkod",      value: "barcode" },
-        { text: "Stok",        value: "qty" },
-        { text: "Birim Maliyet", value: "unitCost" },
-        { text: "Birim Fiyat",   value: "unitPrice" },
-        { text: "",            value: "actions", sortable: false },
-      ],
-      dayHeaders: [
-        { text: "Saat",   value: "time" },
-        { text: "Satır",  value: "lines" },
-        { text: "Toplam", value: "total" },
-        { text: "Maliyet", value: "cogs" },
-        { text: "Kâr",    value: "profit" },
-      ],
+      snack: { show:false, color:"green", text:"" },
+      platformMaster: ["Mağaza","Web","Instagram","WhatsApp","Trendyol","Hepsiburada","N11"],
     };
   },
 
+  created(){
+    try{
+      const dbCustomers = get('customers') || [];
+      const dbOrders    = get('orders')    || [];
+      const dbShipments = get('shipments') || [];
+      const products    = get('products')  || [];
+      const platforms   = get('platforms');
+      if (Array.isArray(platforms) && platforms.length) this.platformMaster = platforms;
+
+      this.customers = dbCustomers.map(c => {
+        const ordersFor = dbOrders.filter(o => o.customerId === c.id);
+        const normalizedOrders = this.normalizeOrders(ordersFor, dbShipments, products);
+        return {
+          id: c.id,
+          fullName: c.name || c.fullName || '',
+          phone: c.phone || '',
+          email: c.email || '',
+          addressShort: c.addressShort || [c.city, c.district].filter(Boolean).join(', '),
+          orders: normalizedOrders
+        };
+      });
+
+      // başlangıç hızlı aralığı
+      this.setQuick('today');
+    }catch(e){
+      console.error('musteriler yüklenemedi:', e);
+      this.customers = [];
+    }
+  },
+
   computed: {
-    nowStr() {
-      // 12.08.2025 13:45:12 formatına yakın
-      return this.now.toLocaleString("tr-TR", {
-        year: "numeric", month: "2-digit", day: "2-digit",
-        hour: "2-digit", minute: "2-digit", second: "2-digit",
-        hour12: false
+    themeLabel(){ return this.$vuetify.theme.dark ? 'Koyu' : 'Açık' },
+    platformOptions() {
+      const set = new Set(this.platformMaster);
+      this.customers.forEach(c => c.orders.forEach(o => o.platform && set.add(o.platform)));
+      return Array.from(set);
+    },
+    statusOptions() {
+      const s = new Set();
+      this.customers.forEach(c => c.orders.forEach(o => o.status && s.add(o.status)));
+      return Array.from(s);
+    },
+    customersEnriched() {
+      return this.customers.map(c => {
+        const sorted = [...c.orders].sort((a,b) => new Date(b.date) - new Date(a.date));
+        const last = sorted[0] || null;
+        const platforms = Array.from(new Set(c.orders.map(o => o.platform).filter(Boolean)));
+        const orderCount = c.orders.length;
+        const lastOrderAt = last ? new Date(last.date) : null;
+        const shippingStatus = last ? last.status : null;
+        const isDone = shippingStatus === "Teslim Edildi";
+        return { ...c, platforms, orderCount, lastOrderAt, shippingStatus, isDone, orders: sorted };
       });
     },
+    filteredCustomers() {
+      const q = (this.filters.q || "").toLowerCase().trim();
+      const p = this.filters.platform;
+      const s = this.filters.status;
+      const sd = this.parseDate(this.filters.startDate);
+      const ed = this.parseDate(this.filters.endDate, true);
 
-    selectedProduct() {
-      return this.inventory.find(x => x.id === this.selectedId) || null;
+      return this.customersEnriched.filter(c => {
+        const txt = [c.fullName, c.phone, c.email, c.addressShort].join(" ").toLowerCase();
+        const matchQ = q ? txt.includes(q) : true;
+        const matchP = p ? c.platforms.includes(p) : true;
+        const matchS = s ? c.shippingStatus === s : true;
+        const matchDate = (sd || ed)
+            ? c.orders.some(o => { const d = new Date(o.date); return (!sd || d >= sd) && (!ed || d <= ed); })
+            : true;
+        return matchQ && matchP && matchS && matchDate;
+      });
     },
-
-    // arama + autocomplete için _label ekleyip filtrelenmiş liste döndürür
-    filteredInventory() {
-      const q = (this.invSearch || "").toString().toLowerCase().trim();
-      const arr = this.inventory.map(it => ({
-        ...it,
-        _label: `${it.name} • ${it.sku}${it.barcode ? " • " + it.barcode : ""}`
-      }));
-      if (!q) return arr;
-      return arr.filter(it =>
-          it.name.toLowerCase().includes(q) ||
-          it.sku.toLowerCase().includes(q) ||
-          (it.barcode || "").toLowerCase().includes(q)
-      );
+    totalOrders() {
+      return this.filteredCustomers.reduce((t,c)=> t + c.orders.length, 0);
     },
+    totalRevenue() {
+      return this.filteredCustomers.reduce((t,c)=> t + c.orders.reduce((x,o)=>x+o.total,0), 0);
+    }
   },
 
   methods: {
-    money(n) {
-      return new Intl.NumberFormat("tr-TR", { style: "currency", currency: "TRY" }).format(Number(n || 0));
+    // tema
+    setAccent(c){ this.accent = c; localStorage.setItem('jp_accent', c) },
+    cycleTheme(){ this.$vuetify.theme.dark = !this.$vuetify.theme.dark },
+
+    // hızlı tarih aralıkları
+    setQuick(mode){
+      this.quick = mode;
+      const d = new Date(); const p = v => String(v).padStart(2,'0');
+      const today = `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`;
+      if(mode==='today'){
+        this.filters.startDate = today; this.filters.endDate = today;
+      }else if(mode==='7d'){
+        const d2 = new Date(d); d2.setDate(d2.getDate() - 6);
+        this.filters.startDate = `${d2.getFullYear()}-${p(d2.getMonth()+1)}-${p(d2.getDate())}`;
+        this.filters.endDate = today;
+      }else if(mode==='month'){
+        const d2 = new Date(d.getFullYear(), d.getMonth(), 1);
+        this.filters.startDate = `${d2.getFullYear()}-${p(d2.getMonth()+1)}-${p(d2.getDate())}`;
+        this.filters.endDate = today;
+      }
     },
+    resetFilters(){ this.filters = { q:"", platform:null, status:null, startDate:"", endDate:"" } },
 
-    // v-autocomplete custom filter (case-insensitive)
-    invFilter(item, queryText /*, itemText*/) {
-      const q = (queryText || "").toLowerCase();
-      return (item._label || "").toLowerCase().includes(q);
-    },
+    /* ---------- DB order -> UI order normalize ---------- */
+    normalizeOrders(orders, shipments, products){
+      const findProduct = id => (products||[]).find(p => p.id === id) || {};
+      const shipOf = orderId => (shipments||[]).find(s => s.orderId === orderId) || null;
 
-    addToCart() {
-      if (!this.selectedProduct || this.addQty <= 0) return;
-      const p = this.selectedProduct;
+      return (orders||[]).map(o => {
+        const items = (o.lines||[]).reduce((t,l)=> t + Number(l.qty||0), 0);
 
-      // sepet satırı
-      const row = {
-        rowId: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
-        id: p.id,
-        sku: p.sku,
-        name: p.name,
-        stock: p.qty,          // o anki stok görüntüsü
-        qty: this.addQty,
-        discountPct: 0,
-        markupPct: 0,
-        unitCost: p.unitCost,
-        unitPrice: p.unitPrice,
-        unitPriceEff: p.unitPrice,
-        subtotal: 0,
-        profit: 0,
-      };
+        let totalGross = 0;
+        (o.lines||[]).forEach(l => {
+          const prod = findProduct(l.productId);
+          const calc = priceCalc(prod);
+          let unitGross = (l.manualPrice != null && !isNaN(l.manualPrice))
+              ? Number(l.manualPrice)
+              : calc.priceGross;
 
-      this.recalcRow(row);
-      this.cart.items.push(row);
-      this.recalcCartTotals();
+          if(l.discountType === 'pct'){
+            unitGross = Math.max(0, unitGross * (1 - Number(l.discountValue||0)/100));
+          }else if(l.discountType === 'tl'){
+            unitGross = Math.max(0, unitGross - Number(l.discountValue||0));
+          }
+          totalGross += unitGross * (Number(l.qty)||0);
+        });
 
-      // seçim sıfırla
-      this.selectedId = null;
-      this.addQty = 1;
-    },
+        const sh = shipOf(o.id);
+        const deliveredEvent = sh?.events?.find(e => e.code === 'DELIVER') || null;
 
-    recalcRow(item) {
-      const cost = Number(item.unitCost) || 0;
-      const base = Number(item.unitPrice) || 0;
-      const qty  = Math.max(1, Number(item.qty) || 1);
-
-      const d = Math.min(100, Math.max(0, Number(item.discountPct) || 0));
-      const m = Math.max(0, Number(item.markupPct) || 0);
-
-      // efektif fiyat = (fiyat - indirim) * (1 + zam)
-      const priceAfterDiscount = base * (1 - d / 100);
-      const unitEff = priceAfterDiscount * (1 + m / 100);
-
-      item.unitPriceEff = unitEff;
-      item.subtotal = unitEff * qty;
-      item.profit = (unitEff - cost) * qty;
-
-      this.recalcCartTotals();
-    },
-
-    recalcCartTotals() {
-      const t = this.cart.items.reduce((acc, it) => {
-        acc.total  += Number(it.subtotal) || 0;
-        acc.cogs   += (Number(it.unitCost) || 0) * (Number(it.qty) || 0);
-        acc.profit += Number(it.profit) || 0;
-        return acc;
-      }, { total: 0, cogs: 0, profit: 0 });
-
-      this.cart.total = t.total;
-      this.cart.cogs = t.cogs;
-      this.cart.profit = t.profit;
-    },
-
-    removeFromCart(row) {
-      const i = this.cart.items.findIndex(x => x.rowId === row.rowId);
-      if (i >= 0) this.cart.items.splice(i, 1);
-      this.recalcCartTotals();
-    },
-
-    completeSale() {
-      if (this.cart.items.length === 0) return;
-
-      // envanterden düş
-      this.cart.items.forEach(ci => {
-        const inv = this.inventory.find(x => x.id === ci.id);
-        if (inv) inv.qty = Math.max(0, Number(inv.qty) - Number(ci.qty));
+        return {
+          id: o.id,
+          date: o.date,
+          platform: o.platform || '',
+          items,
+          total: Math.round(totalGross),
+          cargoCompany: sh ? sh.carrier : (o.cargoCompany || ''),
+          trackingNo: sh ? sh.trackingNo : (o.trackingNo || ''),
+          status: sh ? sh.status : (o.status || 'Hazırlanıyor'),
+          deliveredAt: deliveredEvent ? deliveredEvent.time : (o.deliveredAt || null)
+        };
       });
+    },
 
-      // satış kaydı
-      const sale = {
-        time: new Date().toLocaleTimeString("tr-TR", { hour12: false }),
-        lines: this.cart.items.length,
-        total: this.cart.total,
-        cogs: this.cart.cogs,
-        profit: this.cart.profit,
-        items: this.cart.items.map(x => ({
-          id: x.id, sku: x.sku, name: x.name, qty: x.qty, unitPriceEff: x.unitPriceEff
-        })),
+    // helpers
+    tl(n){ return new Intl.NumberFormat("tr-TR",{style:"currency",currency:"TRY"}).format(n||0); },
+    fmtDateTime(d){ if(!d) return "-"; const dt=(d instanceof Date)?d:new Date(d); const p=v=>String(v).padStart(2,"0"); return `${dt.getFullYear()}-${p(dt.getMonth()+1)}-${p(dt.getDate())} ${p(dt.getHours())}:${p(dt.getMinutes())}`; },
+    parseDate(s, endOfDay=false){ if(!s) return null; const d=new Date(s+"T00:00:00"); if(endOfDay) d.setHours(23,59,59,999); return isNaN(d)?null:d; },
+    statusColor(st){ return st==="Teslim Edildi"?"teal": st==="Dağıtımda"?"indigo": st==="Kargoya Verildi"?"blue": st==="Hazırlanıyor"?"orange":"grey"; },
+    newId(){ return Date.now() + Math.floor(Math.random()*1000); },
+    toast(text,color="green"){ this.snack={show:true,color,text}; },
+
+    // müşteri CRUD (runtime)
+    openCustomerDialog(c=null){
+      this.customerForm = c ? { ...c } : { id:null, fullName:"", phone:"", email:"", addressShort:"" };
+      this.dialogs.customer = true;
+    },
+    saveCustomer(){
+      const f = this.customerForm;
+      if(!f.fullName){ this.toast("Ad Soyad zorunlu","red"); return; }
+      if(f.id){
+        const i = this.customers.findIndex(x=>x.id===f.id);
+        if(i>-1) this.$set(this.customers, i, { ...this.customers[i], ...f });
+        this.toast("Müşteri güncellendi");
+      }else{
+        this.customers.push({ ...f, id: this.newId(), orders: [] });
+        this.toast("Müşteri eklendi");
+      }
+      this.dialogs.customer = false;
+    },
+    removeCustomer(c){
+      if(confirm(`"${c.fullName}" silinsin mi? (Tüm siparişleriyle)`)){
+        const i = this.customers.findIndex(x=>x.id===c.id);
+        if(i>-1) this.customers.splice(i,1);
+        this.toast("Müşteri silindi");
+      }
+    },
+
+    // sipariş CRUD (runtime)
+    openOrderDialog(order=null, customer=null){
+      this.orderFixedCustomer = null;
+      if(order){
+        const owner = this.customers.find(c => c.orders.some(o => o.id===order.id));
+        this.orderForm = {
+          id: order.id,
+          customerId: owner ? owner.id : null,
+          date: this.toLocalInput(order.date),
+          platform: order.platform || "",
+          items: order.items || 1,
+          total: order.total || 0,
+          cargoCompany: order.cargoCompany || "",
+          trackingNo: order.trackingNo || "",
+          status: order.status || "Hazırlanıyor",
+          deliveredAt: order.deliveredAt ? this.toLocalInput(order.deliveredAt) : ""
+        };
+      }else{
+        this.orderForm = {
+          id: null,
+          customerId: customer ? customer.id : null,
+          date: this.toLocalInput(new Date()),
+          platform: "",
+          items: 1,
+          total: 0,
+          cargoCompany: "",
+          trackingNo: "",
+          status: "Hazırlanıyor",
+          deliveredAt: ""
+        };
+        if(customer){ this.orderFixedCustomer = customer.id; }
+      }
+      this.dialogs.order = true;
+    },
+    saveOrder(){
+      const f = this.orderForm;
+      if(!f.customerId){ this.toast("Müşteri seç","red"); return; }
+      const cust = this.customers.find(c=>c.id===f.customerId);
+      if(!cust){ this.toast("Müşteri bulunamadı","red"); return; }
+
+      const normalized = {
+        id: f.id || this.newId(),
+        date: this.fromLocalInput(f.date) || new Date().toISOString(),
+        platform: f.platform || "",
+        items: Number(f.items)||1,
+        total: Number(f.total)||0,
+        cargoCompany: f.cargoCompany || "",
+        trackingNo: f.trackingNo || "",
+        status: f.status || "Hazırlanıyor",
+        deliveredAt: f.deliveredAt ? this.fromLocalInput(f.deliveredAt) : null
       };
-      this.day.sales.unshift(sale);
-      this.day.total  += sale.total;
-      this.day.cogs   += sale.cogs;
-      this.day.profit += sale.profit;
 
-      // sepet temizle
-      this.cart = { items: [], total: 0, cogs: 0, profit: 0 };
-
-      this.snack = { show: true, text: "Satış tamamlandı", color: "success" };
+      if(f.id){
+        const oldOwner = this.customers.find(c => c.orders.some(o => o.id===f.id));
+        if(oldOwner && oldOwner.id !== cust.id){
+          const idx = oldOwner.orders.findIndex(o => o.id===f.id);
+          const old = oldOwner.orders[idx];
+          oldOwner.orders.splice(idx,1);
+          cust.orders.push({ ...old, ...normalized });
+        }else{
+          const idx = cust.orders.findIndex(o => o.id===f.id);
+          if(idx>-1) this.$set(cust.orders, idx, { ...cust.orders[idx], ...normalized });
+        }
+        this.toast("Sipariş güncellendi");
+      }else{
+        cust.orders.push(normalized);
+        this.toast("Sipariş eklendi");
+      }
+      this.dialogs.order = false;
+    },
+    removeOrder(customer, order){
+      const owner = customer || this.customers.find(c => c.orders.some(o => o.id===order.id));
+      if(!owner) return;
+      if(confirm(`#${order.id} sipariş silinsin mi?`)){
+        const i = owner.orders.findIndex(o=>o.id===order.id);
+        if(i>-1) owner.orders.splice(i,1);
+        this.toast("Sipariş silindi");
+      }
     },
 
-    addInventory() {
-      // Vuetify 2 form doğrulama
-      if (!this.$refs.addForm || !this.$refs.addForm.validate()) return;
-
-      const nextId = (this.inventory.reduce((m, x) => Math.max(m, x.id), 0) || 0) + 1;
-      const p = {
-        id: nextId,
-        sku: String(this.addForm.sku || "").trim(),
-        name: String(this.addForm.name || "").trim(),
-        barcode: String(this.addForm.barcode || "").trim(),
-        qty: Number(this.addForm.qty) || 0,
-        unitCost: Number(this.addForm.unitCost) || 0,
-        unitPrice: Number(this.addForm.unitPrice) || 0,
-      };
-
-      this.inventory.unshift(p);
-      this.dialogs.addItem = false;
-      this.valid.add = false;
-      this.addForm = { sku: "", name: "", barcode: "", qty: 0, unitCost: 0, unitPrice: 0 };
-
-      this.snack = { show: true, text: "Ürün eklendi", color: "success" };
+    // datetime-local yardımcıları
+    toLocalInput(d){
+      const dt = (d instanceof Date) ? d : new Date(d);
+      if(isNaN(dt)) return "";
+      const p=v=>String(v).padStart(2,"0");
+      return `${dt.getFullYear()}-${p(dt.getMonth()+1)}-${p(dt.getDate())}T${p(dt.getHours())}:${p(dt.getMinutes())}`;
     },
-
-    removeInventory(item) {
-      const i = this.inventory.findIndex(x => x.id === item.id);
-      if (i >= 0) this.inventory.splice(i, 1);
-      this.snack = { show: true, text: "Ürün silindi", color: "info" };
-    },
-  },
-
-  mounted() {
-    this.timerId = setInterval(() => { this.now = new Date(); }, 1000);
-  },
-  beforeDestroy() {
-    if (this.timerId) clearInterval(this.timerId);
-  },
+    fromLocalInput(s){ if(!s) return null; const d=new Date(s); return isNaN(d)?null:d.toISOString(); },
+  }
 };
 </script>
 
 <style scoped>
-.soft-card { border-radius: 12px; }
-.nowrap { white-space: nowrap; }
-/* v-text-field 'dense' görünümü biraz sıkılaştırma (hafif dokunuş) */
-.dense .v-input__control { min-height: 36px; }
+/* Drawer */
+.elevated-drawer{
+  border-top-right-radius:16px;
+  border-bottom-right-radius:16px;
+  box-shadow:0 10px 30px rgba(0,0,0,.08);
+}
+
+/* Hero */
+.hero{ position:relative; height:120px; overflow:hidden; border-bottom:1px solid rgba(0,0,0,.04); }
+.theme--light .hero{ background:linear-gradient(180deg,#ffffff,#fafafa); }
+.theme--dark  .hero{ background:linear-gradient(180deg,#0f1115,#0a0c10); }
+.hero-glow{ position:absolute; inset:-30%; background:
+    radial-gradient(90% 60% at 30% 30%, var(--accent) 0%, transparent 60%),
+    radial-gradient(90% 60% at 90% 20%, rgba(99,102,241,.55) 0%, transparent 60%),
+    linear-gradient(180deg, rgba(255,255,255,.35), transparent 60%);
+  animation:float 16s ease-in-out infinite; filter:blur(42px); opacity:.55; }
+.theme--dark .hero-glow{ opacity:.35; }
+.hero-content{ position:relative; height:100%; display:flex; flex-direction:column; justify-content:center; padding:12px 24px; }
+.hero-title{ margin:0; font-weight:800; letter-spacing:.2px; }
+.hero-sub{ opacity:.8 }
+
+/* Filters */
+.filters-sheet{
+  border-radius:16px; padding:14px 16px;
+  border:1px solid rgba(0,0,0,.06);
+  background:rgba(255,255,255,.75);
+  backdrop-filter:blur(8px) saturate(120%);
+}
+.theme--dark .filters-sheet{
+  border-color:rgba(255,255,255,.06);
+  background:rgba(24,24,24,.7);
+}
+.glass-btn{ background:rgba(255,255,255,.6); border:1px solid rgba(0,0,0,.06) }
+.theme--dark .glass-btn{ background:rgba(24,24,24,.6); border-color:rgba(255,255,255,.08) }
+
+/* Quick actions */
+.qa{
+  display:flex; align-items:center;
+  padding:10px 14px; margin-right:12px;
+  border-radius:14px; border:1px solid transparent;
+  background:rgba(255,255,255,.7); backdrop-filter:blur(6px);
+  transition:transform .2s ease, box-shadow .2s ease;
+}
+.theme--dark .qa{ background:rgba(30,30,30,.7) }
+.qa:hover{ transform:translateY(-3px); box-shadow:0 10px 20px rgba(0,0,0,.08) }
+
+/* Table */
+.table-card{ border-radius:16px; overflow:hidden }
+.elevated-datatable ::v-deep thead th{ background:linear-gradient(180deg,#fafafa,#f4f6f8) }
+.theme--dark .elevated-datatable ::v-deep thead th{ background:linear-gradient(180deg,#1d1d1d,#181818) }
+.elevated-datatable ::v-deep tbody tr:hover{ background:rgba(0,0,0,.02) }
+.theme--dark .elevated-datatable ::v-deep tbody tr:hover{ background:rgba(255,255,255,.04) }
+
+/* Misc */
+@keyframes float{ 0%{transform:translate3d(0,0,0) rotate(0deg)} 50%{transform:translate3d(2%,-2%,0) rotate(1deg)} 100%{transform:translate3d(0,0,0) rotate(0deg)} }
+.v-data-table .v-data-table__wrapper{ font-size:.92rem; }
+</style>
+
+<style>
+/* v-main default top padding'i iptal et */
+.v-main__wrap{ padding-top:0 !important; }
 </style>

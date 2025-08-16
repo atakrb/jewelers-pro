@@ -1,528 +1,677 @@
 <template>
-  <v-app>
-    <v-app-bar app color="indigo darken-2" dark flat>
-      <!-- Sol: Hamburger -->
-      <v-app-bar-nav-icon @click="drawer = !drawer" />
-
-      <v-toolbar-title class="font-weight-bold">Ürün Alış Modülü</v-toolbar-title>
-      <v-spacer></v-spacer>
-
-      <!-- Saat -->
-      <v-chip small color="deep-purple accent-2" text-color="white">{{ nowStr }}</v-chip>
-
-      <!-- Tema -->
-      <v-btn icon @click="$vuetify.theme.dark = !$vuetify.theme.dark">
-        <v-icon>mdi-theme-light-dark</v-icon>
-      </v-btn>
-
-      <!-- Sağ: Profil menüsü -->
-      <v-menu offset-y left bottom>
-        <template v-slot:activator="{ on, attrs }">
-          <v-btn icon v-bind="attrs" v-on="on" :title="user.name">
-            <v-avatar size="32">
-              <img :src="user.avatar" alt="avatar">
-            </v-avatar>
-          </v-btn>
-        </template>
-
-        <v-list dense>
-          <v-list-item :to="routes.profile || undefined" :href="routes.profile ? undefined : '#'" >
-            <v-list-item-icon><v-icon>mdi-account-circle</v-icon></v-list-item-icon>
-            <v-list-item-title>Profil</v-list-item-title>
-          </v-list-item>
-
-          <v-list-item :to="routes.iletisim || undefined" :href="routes.iletisimHref" target="_blank">
-            <v-list-item-icon><v-icon>mdi-email</v-icon></v-list-item-icon>
-            <v-list-item-title>İletişim</v-list-item-title>
-          </v-list-item>
-
-          <v-divider class="my-1" />
-
-          <v-list-item @click="logout">
-            <v-list-item-icon><v-icon color="red">mdi-logout</v-icon></v-list-item-icon>
-            <v-list-item-title class="red--text text--darken-1">Çıkış Yap</v-list-item-title>
-          </v-list-item>
-        </v-list>
-      </v-menu>
-    </v-app-bar>
-    <v-navigation-drawer v-model="drawer" app temporary>
-      <!-- Kullanıcı kartı -->
-      <v-list two-line subheader>
-        <v-subheader>Hesap</v-subheader>
-        <v-list-item>
-          <v-list-item-avatar>
-            <img :src="user.avatar" alt="">
+  <v-container fluid class="px-0 py-0" :style="{ '--accent': accent }">
+    <!-- SOL YAN MENÜ -->
+    <v-navigation-drawer
+        v-model="drawer"
+        :mini-variant.sync="mini"
+        :permanent="$vuetify.breakpoint.lgAndUp"
+        expand-on-hover
+        app
+        width="280"
+        class="elevated-drawer"
+    >
+      <v-list dense>
+        <v-list-item two-line class="mb-1">
+          <v-list-item-avatar size="30">
+            <v-icon color="white">mdi-diamond-stone</v-icon>
           </v-list-item-avatar>
           <v-list-item-content>
-            <v-list-item-title class="font-weight-medium">{{ user.name }}</v-list-item-title>
-            <v-list-item-subtitle>{{ user.email }}</v-list-item-subtitle>
+            <v-list-item-title class="font-weight-bold">Jewelers Pro</v-list-item-title>
+            <v-list-item-subtitle>Mağaza Paneli</v-list-item-subtitle>
           </v-list-item-content>
         </v-list-item>
-      </v-list>
 
-      <v-divider class="mb-2"/>
+        <v-divider class="mb-2" />
 
-      <!-- Navigasyon -->
-      <v-list nav dense>
-        <v-list-item :to="{ name: 'home' }" exact>
-          <v-list-item-icon><v-icon>mdi-home</v-icon></v-list-item-icon>
-          <v-list-item-title>Ana Sayfa</v-list-item-title>
+        <v-list-item
+            v-for="it in drawerItems"
+            :key="it.to"
+            :to="{ name: it.to }"
+            link
+            exact
+            class="rounded-lg"
+        >
+          <v-list-item-icon><v-icon>{{ it.icon }}</v-icon></v-list-item-icon>
+          <v-list-item-title>{{ it.title }}</v-list-item-title>
         </v-list-item>
 
-        <v-list-item :to="{ name: 'itemBuy' }">
-          <v-list-item-icon><v-icon>mdi-cart-arrow-down</v-icon></v-list-item-icon>
-          <v-list-item-title>Müşteriden Alım</v-list-item-title>
+        <v-divider class="my-2" />
+
+        <v-list-item class="rounded-lg">
+          <v-list-item-icon><v-icon>mdi-palette</v-icon></v-list-item-icon>
+          <v-list-item-title>Vurgu</v-list-item-title>
+          <v-spacer />
+          <v-btn v-for="c in accents" :key="c" icon small :style="{ color:c }" @click="setAccent(c)">
+            <v-icon>mdi-circle</v-icon>
+          </v-btn>
         </v-list-item>
 
-        <v-list-item :to="{ name: 'sellAndInventory' }">
-          <v-list-item-icon><v-icon>mdi-cash-register</v-icon></v-list-item-icon>
-          <v-list-item-title>Satış & Envanter</v-list-item-title>
+        <v-list-item class="rounded-lg" @click="cycleTheme">
+          <v-list-item-icon><v-icon>mdi-theme-light-dark</v-icon></v-list-item-icon>
+          <v-list-item-title>Tema</v-list-item-title>
+          <v-spacer/><v-chip x-small>{{ themeLabel }}</v-chip>
         </v-list-item>
 
-        <!-- İsteğe bağlı: Profil -->
-        <v-list-item :to="routes.profile || undefined" :href="routes.profile ? undefined : '#'" >
-          <v-list-item-icon><v-icon>mdi-account</v-icon></v-list-item-icon>
-          <v-list-item-title>Profil</v-list-item-title>
-        </v-list-item>
-
-        <!-- İletişim -->
-        <v-list-item :to="routes.iletisim || undefined" :href="routes.iletisimHref" target="_blank">
-          <v-list-item-icon><v-icon>mdi-phone</v-icon></v-list-item-icon>
-          <v-list-item-title>İletişim</v-list-item-title>
-        </v-list-item>
-
-        <!-- Çıkış -->
-        <v-list-item @click="logout">
-          <v-list-item-icon><v-icon color="red">mdi-logout</v-icon></v-list-item-icon>
-          <v-list-item-title class="red--text text--darken-1">Çıkış Yap</v-list-item-title>
+        <v-list-item :to="{ name:'musteriBilgi' }" class="rounded-lg" link>
+          <v-list-item-icon><v-icon>mdi-lifebuoy</v-icon></v-list-item-icon>
+          <v-list-item-title>Destek</v-list-item-title>
         </v-list-item>
       </v-list>
     </v-navigation-drawer>
 
+    <!-- HERO -->
+    <div class="hero">
+      <div class="hero-glow" :style="{ '--accent': accent }"></div>
+      <div class="hero-content">
+        <div class="overline mb-1">JEWELERS PRO</div>
+        <h2 class="hero-title">Ürünler</h2>
+        <div class="hero-sub">Filtrele, fiyatla, stokla — tek ekranda.</div>
+      </div>
+    </div>
 
-    <v-main>
-      <v-container fluid class="py-6">
-        <v-row>
-          <!-- SOL: Satış -->
-          <v-col cols="12" md="7">
-            <v-card class="pa-4 soft-card" outlined>
-              <div class="d-flex align-center mb-2">
-                <h2 class="mb-0">Satış</h2>
-                <v-spacer></v-spacer>
-                <v-btn color="green" dark :disabled="cart.items.length===0" @click="completeSale">
-                  <v-icon left>mdi-cash-register</v-icon>Satışı Tamamla
-                </v-btn>
-              </div>
+    <!-- HIZLI AKSİYONLAR -->
+    <v-container class="pt-4 pb-0">
+      <v-slide-group show-arrows>
+        <v-slide-item v-for="qa in quickActions" :key="qa.key">
+          <v-card class="qa" :style="{ borderColor: accent }" @click="qa.click && qa.click()">
+            <v-icon class="mr-2" :color="accent">{{ qa.icon }}</v-icon>
+            <div>
+              <div class="subtitle-2 font-weight-bold">{{ qa.title }}</div>
+              <div class="caption grey--text">{{ qa.subtitle }}</div>
+            </div>
+            <v-spacer/>
+            <v-chip x-small :color="accent" text-color="white">{{ qa.key }}</v-chip>
+          </v-card>
+        </v-slide-item>
+      </v-slide-group>
+    </v-container>
 
-              <!-- Ürün Arama -->
-              <v-row class="mb-2">
-                <v-col cols="12" md="8">
-                  <v-autocomplete
-                      v-model="selectedId"
-                      :items="filteredInventory"
-                      item-text="_label"
-                      item-value="id"
-                      label="Ürün ara (Ad/SKU/Barkod)"
-                      prepend-inner-icon="mdi-magnify"
-                      dense clearable :filter="invFilter" hide-no-data
-                  />
-                </v-col>
-                <v-col cols="6" md="2">
-                  <v-text-field v-model.number="addQty" type="number" min="1" label="Adet" dense />
-                </v-col>
-                <v-col cols="6" md="2" class="d-flex align-end">
-                  <v-btn block color="indigo" dark :disabled="!selectedProduct || addQty<=0" @click="addToCart">
-                    <v-icon left>mdi-cart-plus</v-icon>Ekle
-                  </v-btn>
-                </v-col>
-              </v-row>
+    <!-- FİLTRELER + YENİ ÜRÜN -->
+    <v-container class="pt-4">
+      <v-sheet class="filters-sheet mb-3">
+        <v-card-text class="px-0">
+          <v-row dense>
+            <v-col cols="12" md="3">
+              <v-text-field v-model="filters.q" dense outlined clearable label="Ara (ad, barkod, SKU)" prepend-inner-icon="mdi-magnify"/>
+            </v-col>
+            <v-col cols="6" md="2">
+              <v-select v-model="filters.categoryId" :items="categories.map(c=>({text:c.name,value:c.id}))"
+                        dense outlined clearable label="Kategori"/>
+            </v-col>
+            <v-col cols="6" md="2">
+              <v-select v-model="filters.supplierId" :items="suppliers.map(s=>({text:s.name,value:s.id}))"
+                        dense outlined clearable label="Toptancı"/>
+            </v-col>
+            <v-col cols="6" md="2">
+              <v-select v-model="filters.type" :items="typeOptions" dense outlined clearable label="Tür"/>
+            </v-col>
+            <v-col cols="6" md="1">
+              <v-text-field v-model="filters.ayar" dense outlined clearable label="Ayar"/>
+            </v-col>
+            <v-col cols="6" md="1">
+              <v-text-field v-model.number="filters.minGram" type="number" dense outlined clearable label="Min g"/>
+            </v-col>
+            <v-col cols="6" md="1">
+              <v-text-field v-model.number="filters.maxGram" type="number" dense outlined clearable label="Max g"/>
+            </v-col>
+            <v-col cols="12" md="3" class="d-flex align-center">
+              <v-checkbox v-model="filters.inStockOnly" hide-details label="Stokta" class="mt-0"/>
+            </v-col>
 
-              <!-- Sepet -->
-              <v-data-table :headers="cartHeaders" :items="cart.items" item-key="rowId" class="soft-card" dense :items-per-page="5" outlined>
-                <template v-slot:item.qty="{ item }">
-                  <v-text-field class="dense" v-model.number="item.qty" type="number" min="1" @input="recalcRow(item)" />
-                </template>
-                <template v-slot:item.discountPct="{ item }">
-                  <v-text-field class="dense" v-model.number="item.discountPct" type="number" min="0" max="100" suffix="%" @input="recalcRow(item)" />
-                </template>
-                <template v-slot:item.markupPct="{ item }">
-                  <v-text-field class="dense" v-model.number="item.markupPct" type="number" min="0" max="300" suffix="%" @input="recalcRow(item)" />
-                </template>
-                <template v-slot:item.unitPriceEff="{ item }"><span class="nowrap">{{ money(item.unitPriceEff) }}</span></template>
-                <template v-slot:item.subtotal="{ item }"><span class="nowrap">{{ money(item.subtotal) }}</span></template>
-                <template v-slot:item.profit="{ item }"><span class="nowrap">{{ money(item.profit) }}</span></template>
-                <template v-slot:item.actions="{ item }">
-                  <v-btn icon @click="removeFromCart(item)"><v-icon color="red">mdi-delete</v-icon></v-btn>
-                </template>
-              </v-data-table>
+            <v-spacer/>
+            <v-col cols="12" md="3" class="d-flex justify-end align-center">
+              <v-btn text class="mr-2" @click="resetFilters">Sıfırla</v-btn>
+              <v-btn :color="accent" dark class="mr-2" @click="exportCSV">
+                <v-icon left small>mdi-file-delimited</v-icon> CSV
+              </v-btn>
+              <v-btn outlined class="mr-2" @click="yazdir">
+                <v-icon left small>mdi-printer</v-icon> Yazdır
+              </v-btn>
+              <v-btn :color="accent" dark @click="openProductDialog()">
+                <v-icon left>mdi-plus</v-icon> Yeni Ürün
+              </v-btn>
+            </v-col>
+          </v-row>
+        </v-card-text>
+      </v-sheet>
 
-              <!-- Özet -->
-              <v-card class="mt-3 pa-4 soft-card" outlined>
-                <v-row>
-                  <v-col cols="12" md="4">
-                    <div class="subtitle-2 text--secondary">Toplam Tutar</div>
-                    <div class="display-1 font-weight-bold">{{ money(cart.total) }}</div>
+      <!-- ÜRÜN TABLOSU -->
+      <div id="productPrint">
+        <v-data-table
+            :headers="headers"
+            :items="filteredProducts"
+            :items-per-page="10"
+            dense fixed-header height="560"
+            class="px-2 product-table"
+        >
+          <template v-slot:item.category="{ item }">{{ categoryName(item.categoryId) }}</template>
+          <template v-slot:item.supplier="{ item }">{{ supplierName(item.supplierId) }}</template>
+          <template v-slot:item.cost="{ item }">{{ tl(item.cost) }}</template>
+          <template v-slot:item.extras="{ item }">{{ tl(item.extras||0) }}</template>
+
+          <template v-slot:item.profitPct="{ item }">
+            {{ pct(priceCalc(item).profitPct) }}
+          </template>
+          <template v-slot:item.profitTL="{ item }">
+            {{ tl(priceCalc(item).profitTL) }}
+          </template>
+
+          <template v-slot:item.vatPercent="{ item }">
+            {{ (item.vatPercent ?? 0) }}%
+          </template>
+
+          <template v-slot:item.price="{ item }">
+            <div class="font-weight-bold">{{ tl(priceCalc(item).priceGross) }}</div>
+            <div class="caption grey--text">({{ tl(priceCalc(item).priceNet) }} + KDV)</div>
+          </template>
+
+          <template v-slot:item.stock="{ item }">
+            <v-chip small :color="item.stock<=0 ? 'red' : item.stock<=5 ? 'orange' : 'green'" text-color="white">
+              {{ item.stock }}
+            </v-chip>
+          </template>
+
+          <template v-slot:item.ops="{ item }">
+            <v-btn icon small @click="decStock(item)"><v-icon small>mdi-minus</v-icon></v-btn>
+            <v-btn icon small @click="incStock(item)"><v-icon small>mdi-plus</v-icon></v-btn>
+            <v-btn icon small @click="openProductDialog(item)"><v-icon small>mdi-pencil</v-icon></v-btn>
+            <v-btn icon small @click="removeProduct(item)"><v-icon small>mdi-delete</v-icon></v-btn>
+          </template>
+
+          <template v-slot:footer.prepend>
+            <div class="px-4 py-2">
+              <v-chip small class="mr-2">Ürün: {{ filteredProducts.length }}</v-chip>
+              <v-chip small class="mr-2" color="teal" text-color="white">
+                Toplam Stok: {{ totalStock }}
+              </v-chip>
+              <v-chip small color="deep-purple" text-color="white">
+                Stok Değeri (Geliş): {{ tl(stockValueCost) }}
+              </v-chip>
+            </div>
+          </template>
+        </v-data-table>
+      </div>
+    </v-container>
+
+    <!-- ÜRÜN DİYALOĞU -->
+    <v-dialog v-model="dialogs.product" max-width="900px">
+      <v-card>
+        <v-card-title class="subtitle-1 font-weight-bold">
+          {{ productForm.id ? 'Ürün Düzenle' : 'Yeni Ürün' }}
+        </v-card-title>
+
+        <v-card-text>
+          <v-form ref="productFormRef">
+            <!-- Üst temel bilgiler -->
+            <v-row dense>
+              <v-col cols="12" md="5">
+                <v-text-field v-model="productForm.name" dense outlined label="Ürün Adı" required />
+              </v-col>
+              <v-col cols="6" md="3">
+                <v-select v-model="productForm.categoryId"
+                          :items="categories.map(c=>({text:c.name,value:c.id}))"
+                          dense outlined label="Kategori"
+                          :rules="[v=>!!v || 'Zorunlu']" required />
+              </v-col>
+              <v-col cols="6" md="4">
+                <v-select v-model="productForm.supplierId"
+                          :items="suppliers.map(s=>({text:s.name,value:s.id}))"
+                          dense outlined label="Toptancı"
+                          :rules="[v=>!!v || 'Zorunlu']" required />
+              </v-col>
+            </v-row>
+
+            <v-row dense>
+              <v-col cols="6" md="2"><v-select v-model="productForm.type" :items="typeOptions" dense outlined label="Tür"/></v-col>
+              <v-col cols="6" md="2"><v-text-field v-model="productForm.ayar" dense outlined label="Ayar"/></v-col>
+              <v-col cols="6" md="2"><v-text-field v-model.number="productForm.gram" type="number" min="0" step="0.01" dense outlined label="Gram (opsiyonel)"/></v-col>
+              <v-col cols="6" md="2"><v-text-field v-model.number="productForm.stock" type="number" min="0" dense outlined label="Stok"/></v-col>
+              <v-col cols="6" md="2"><v-text-field v-model="productForm.sku" dense outlined label="SKU / Kod"/></v-col>
+            </v-row>
+
+            <!-- Fiyatlama Kartı -->
+            <v-card class="mt-3" outlined>
+              <v-card-title class="subtitle-2 font-weight-bold">Fiyatlama</v-card-title>
+              <v-card-text>
+                <v-row dense>
+                  <v-col cols="6" md="3">
+                    <v-text-field v-model.number="productForm.cost" type="number" min="0"
+                                  dense outlined label="Geliş (TL)"/>
                   </v-col>
-                  <v-col cols="6" md="4">
-                    <div class="subtitle-2 text--secondary">Toplam Maliyet (COGS)</div>
-                    <div class="headline font-weight-bold">{{ money(cart.cogs) }}</div>
+                  <v-col cols="6" md="3">
+                    <v-text-field v-model.number="productForm.extras" type="number" min="0"
+                                  dense outlined label="Ek Masraf (TL)"/>
                   </v-col>
-                  <v-col cols="6" md="4">
-                    <div class="subtitle-2 text--secondary">Kâr</div>
-                    <div class="headline font-weight-bold">{{ money(cart.profit) }}</div>
+                  <v-col cols="6" md="3">
+                    <v-text-field v-model.number="productForm.vatPercent" type="number" min="0"
+                                  dense outlined label="KDV %"/>
+                  </v-col>
+                  <v-col cols="6" md="3" class="d-flex align-center">
+                    <v-checkbox v-model="productForm.vatIncluded" hide-details label="Fiyata KDV Dahil"/>
                   </v-col>
                 </v-row>
-              </v-card>
+
+                <v-row dense>
+                  <v-col cols="12" md="4">
+                    <v-select
+                        v-model="productForm.pricingMode"
+                        :items="pricingModes"
+                        dense outlined
+                        label="Fiyatlama Modu"
+                    />
+                  </v-col>
+
+                  <v-col cols="6" md="4" v-if="productForm.pricingMode==='markup'">
+                    <v-text-field v-model.number="productForm.markupPercent" type="number" min="0"
+                                  dense outlined label="Kar % (Markup)"/>
+                  </v-col>
+
+                  <v-col cols="6" md="4" v-if="productForm.pricingMode==='profit'">
+                    <v-text-field v-model.number="productForm.profitTL" type="number" min="0"
+                                  dense outlined label="Kar (TL)"/>
+                  </v-col>
+
+                  <v-col cols="6" md="4" v-if="productForm.pricingMode==='target'">
+                    <v-text-field v-model.number="productForm.targetPrice" type="number" min="0"
+                                  dense outlined :label="productForm.vatIncluded ? 'Hedef Fiyat (KDV Dahil)' : 'Hedef Fiyat (KDV Hariç)'"/>
+                  </v-col>
+
+                  <v-col cols="6" md="4">
+                    <v-select
+                        v-model="productForm.rounding"
+                        :items="roundingOptions"
+                        dense outlined label="Yuvarlama"
+                    />
+                  </v-col>
+                </v-row>
+
+                <!-- ÖNİZLEME -->
+                <v-divider class="my-3"/>
+                <v-row dense>
+                  <v-col cols="12" md="6">
+                    <v-simple-table dense>
+                      <tbody>
+                      <tr><td>Baz Maliyet</td><td class="text-right">{{ tl(pricePreview.base) }}</td></tr>
+                      <tr><td>Net Fiyat (KDV Hariç)</td><td class="text-right">{{ tl(pricePreview.priceNet) }}</td></tr>
+                      <tr><td>KDV Dahil</td><td class="text-right font-weight-bold">{{ tl(pricePreview.priceGross) }}</td></tr>
+                      </tbody>
+                    </v-simple-table>
+                  </v-col>
+                  <v-col cols="12" md="6">
+                    <v-simple-table dense>
+                      <tbody>
+                      <tr><td>Kâr (TL)</td><td class="text-right">{{ tl(pricePreview.profitTL) }}</td></tr>
+                      <tr><td>Kâr %</td><td class="text-right">{{ pct(pricePreview.profitPct) }}</td></tr>
+                      <tr><td>Uygulanan Yuvarlama</td><td class="text-right">{{ pricePreview.roundNote }}</td></tr>
+                      </tbody>
+                    </v-simple-table>
+                  </v-col>
+                </v-row>
+              </v-card-text>
             </v-card>
-          </v-col>
 
-          <!-- SAĞ: Envanter & Gün Sonu -->
-          <v-col cols="12" md="5">
-            <v-card class="pa-4 soft-card" outlined>
-              <div class="d-flex align-center mb-2">
-                <h2 class="mb-0">Envanter</h2>
-                <v-spacer></v-spacer>
-                <v-btn color="indigo" outlined @click="dialogs.addItem=true"><v-icon left>mdi-plus</v-icon>Ürün Ekle</v-btn>
-              </div>
-              <v-text-field v-model="invSearch" dense clearable prepend-inner-icon="mdi-magnify" label="Envanterde Ara" class="mb-2" />
-              <v-data-table :headers="invHeaders" :items="filteredInventory" :items-per-page="5" dense outlined class="soft-card">
-                <template v-slot:item.unitPrice="{ item }"><span class="nowrap">{{ money(item.unitPrice) }}</span></template>
-                <template v-slot:item.unitCost="{ item }"><span class="nowrap">{{ money(item.unitCost) }}</span></template>
-                <template v-slot:item.actions="{ item }">
-                  <v-btn icon @click="removeInventory(item)"><v-icon color="red">mdi-delete</v-icon></v-btn>
-                </template>
-              </v-data-table>
-            </v-card>
+            <!-- Diğer alanlar -->
+            <v-row dense class="mt-3">
+              <v-col cols="6" md="3"><v-text-field v-model="productForm.barcode" dense outlined label="Barkod"/></v-col>
+              <v-col cols="6" md="3"><v-text-field v-model="productForm.color" dense outlined label="Renk/Taş"/></v-col>
+              <v-col cols="6" md="3"><v-text-field v-model="productForm.size" dense outlined label="Beden (yüzük vb.)"/></v-col>
+              <v-col cols="12" md="3"><v-text-field v-model="productForm.tags" dense outlined label="Etiketler (virgülle)"/></v-col>
+              <v-col cols="12"><v-textarea v-model="productForm.description" dense outlined rows="2" label="Açıklama"/></v-col>
+            </v-row>
+          </v-form>
+        </v-card-text>
 
-            <v-card class="mt-4 pa-4 soft-card" outlined>
-              <div class="d-flex align-center mb-2"><h2 class="mb-0">Gün Sonu</h2></div>
-              <v-row>
-                <v-col cols="12" md="4">
-                  <div class="subtitle-2 text--secondary">Satış Toplam</div>
-                  <div class="headline font-weight-bold">{{ money(day.total) }}</div>
-                </v-col>
-                <v-col cols="6" md="4">
-                  <div class="subtitle-2 text--secondary">Maliyet</div>
-                  <div class="subtitle-1 font-weight-bold">{{ money(day.cogs) }}</div>
-                </v-col>
-                <v-col cols="6" md="4">
-                  <div class="subtitle-2 text--secondary">Net Kâr</div>
-                  <div class="subtitle-1 font-weight-bold">{{ money(day.profit) }}</div>
-                </v-col>
-              </v-row>
-              <v-data-table :headers="dayHeaders" :items="day.sales" :items-per-page="5" dense outlined class="soft-card mt-2">
-                <template v-slot:item.total="{ item }"><span class="nowrap">{{ money(item.total) }}</span></template>
-                <template v-slot:item.cogs="{ item }"><span class="nowrap">{{ money(item.cogs) }}</span></template>
-                <template v-slot:item.profit="{ item }"><span class="nowrap">{{ money(item.profit) }}</span></template>
-              </v-data-table>
-            </v-card>
-          </v-col>
-        </v-row>
+        <v-card-actions class="px-4 pb-4">
+          <v-btn text @click="dialogs.product=false">Vazgeç</v-btn>
+          <v-spacer/>
+          <v-btn :color="accent" dark :disabled="!canSaveProduct" @click="saveProduct">Kaydet</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
 
-        <!-- Ürün Ekle Dialog -->
-        <v-dialog v-model="dialogs.addItem" max-width="520">
-          <v-card>
-            <v-card-title class="headline">Yeni Ürün</v-card-title>
-            <v-card-text>
-              <v-form ref="addForm" v-model="valid.add">
-                <v-text-field v-model="addForm.sku" label="SKU" :rules="[r.req]" dense />
-                <v-text-field v-model="addForm.name" label="Ad" :rules="[r.req]" dense />
-                <v-text-field v-model="addForm.barcode" label="Barkod" dense />
-                <v-text-field v-model.number="addForm.qty" label="Stok" type="number" min="0" :rules="[r.nonneg]" dense />
-                <v-text-field v-model.number="addForm.unitCost" label="Birim Maliyet" type="number" min="0" :rules="[r.nonneg]" dense />
-                <v-text-field v-model.number="addForm.unitPrice" label="Birim Fiyat" type="number" min="0" :rules="[r.nonneg]" dense />
-              </v-form>
-            </v-card-text>
-            <v-card-actions>
-              <v-spacer></v-spacer>
-              <v-btn text @click="dialogs.addItem=false">İptal</v-btn>
-              <v-btn color="indigo" dark :disabled="!valid.add" @click="addInventory">Ekle</v-btn>
-            </v-card-actions>
-          </v-card>
-        </v-dialog>
-
-        <v-snackbar v-model="snack.show" :color="snack.color" timeout="2000">{{ snack.text }}</v-snackbar>
-      </v-container>
-    </v-main>
-  </v-app>
+    <v-snackbar v-model="snack.show" :color="snack.color" timeout="2400">{{ snack.text }}</v-snackbar>
+  </v-container>
 </template>
+
 <script>
+import { get } from '@/utils/harddata'
+import { priceCalc } from '@/utils/pricing'
+
 export default {
-  name: "SellAndInventory",
+  name: "UrunlerPage",
   data() {
     return {
-      drawer: false,
-      group: 0,
-
-      user: {
-        name: 'Misafir Kullanıcı',
-        email: 'user@example.com',
-        avatar: 'https://ui-avatars.com/api/?name=MK&background=4c51bf&color=fff'
-      },
-      routes: {
-        profile: null,
-        iletisim: null,
-        iletisimHref: 'mailto:destek@firma.com?subject=İletişim'
-      },
-      computed: {
-        nowStr(){ return this.now.toLocaleString('tr-TR') }
-      },
-      mounted(){
-        this._timerId = setInterval(() => { this.now = new Date() }, 1000)
-      },
-      beforeDestroy(){
-        if (this._timerId) clearInterval(this._timerId)
-      },
-      // UI
-      now: new Date(),
-      timerId: null,
-
-      // arama & seçim
-      invSearch: "",
-      selectedId: null,
-      addQty: 1,
-
-      // sepet
-      cart: { items: [], total: 0, cogs: 0, profit: 0 },
-
-      // envanter (örnek veri)
-      inventory: [
-        { id: 1, sku: "SKU-1001", name: "Altın Yüzük",   barcode: "869000000001", qty: 10, unitCost: 1200, unitPrice: 1500 },
-        { id: 2, sku: "SKU-1002", name: "Gümüş Kolye",   barcode: "869000000002", qty: 15, unitCost:  300, unitPrice:  500 },
-        { id: 3, sku: "SKU-1003", name: "Pırlanta Küpe", barcode: "869000000003", qty:  5, unitCost: 5000, unitPrice: 6500 },
+      /* Drawer & tema */
+      drawer: this.$vuetify?.breakpoint?.lgAndUp || false,
+      mini: this.$vuetify?.breakpoint?.lgAndUp || false,
+      accent: localStorage.getItem('jp_accent') || '#5865F2',
+      accents: ['#5865F2','#0EA5E9','#22C55E','#F59E0B','#EF4444','#8B5CF6'],
+      drawerItems: [
+        { title:"Ana Sayfa",    icon:"mdi-view-dashboard-outline", to:"home" },
+        { title:"Satış",        icon:"mdi-cash-register",          to:"satis" },
+        { title:"Raporlar",     icon:"mdi-file-chart",             to:"raporlar" },
+        { title:"Toptancı",     icon:"mdi-storefront-outline",     to:"toptanci" },
+        { title:"Kategoriler",  icon:"mdi-shape-outline",          to:"kategoriler" },
+        { title:"Ürünler",      icon:"mdi-package-variant-closed", to:"urunler" },
+        { title:"Müşteri Bilgi",icon:"mdi-account-group-outline",  to:"musteriBilgi" },
+        { title:"Stok",         icon:"mdi-archive-outline",        to:"stok" },
+        { title:"Kargo",        icon:"mdi-truck-outline",          to:"kargo" },
+      ],
+      quickActions: [
+        { key:'N', icon:'mdi-plus',             title:'Yeni Ürün',  subtitle:'Hızlı ekle',     click:()=>this.openProductDialog() },
+        { key:'S', icon:'mdi-filter-check',     title:'Stokta',     subtitle:'Sadece stokta',  click:()=>this.filters.inStockOnly = !this.filters.inStockOnly },
+        { key:'C', icon:'mdi-file-delimited',   title:'CSV',        subtitle:'Dışa aktar',     click:()=>this.exportCSV() },
+        { key:'P', icon:'mdi-printer',          title:'Yazdır',     subtitle:'Ürün tablosu',   click:()=>this.yazdir() },
       ],
 
-      // gün sonu
-      day: { sales: [], total: 0, cogs: 0, profit: 0 },
+      // referanslar (DB'den gelecek)
+      categories: [],
+      suppliers: [],
+      // ürün listesi (DB'den gelecek)
+      products: [],
 
-      // dialog & form
-      dialogs: { addItem: false },
-      valid: { add: false },
-      addForm: { sku: "", name: "", barcode: "", qty: 0, unitCost: 0, unitPrice: 0 },
+      headers: [
+        { text: "ID", value: "id", width: 80 },
+        { text: "Ürün", value: "name" },
+        { text: "Kategori", value: "category", width: 140 },
+        { text: "Toptancı", value: "supplier", width: 160 },
+        { text: "Tür", value: "type", width: 110 },
+        { text: "Ayar", value: "ayar", width: 90 },
+        { text: "Geliş", value: "cost", width: 110, align: "end" },
+        { text: "Ekstra", value: "extras", width: 110, align: "end" },
+        { text: "Kâr %", value: "profitPct", width: 90, align: "end" },
+        { text: "Kâr TL", value: "profitTL", width: 110, align: "end" },
+        { text: "KDV %", value: "vatPercent", width: 90, align: "end" },
+        { text: "Satış (KDV Dhl)", value: "price", width: 150, align: "end" },
+        { text: "Stok", value: "stock", width: 90, align: "end" },
+        { text: "Barkod", value: "barcode", width: 140 },
+        { text: "SKU", value: "sku", width: 120 },
+        { text: "", value: "ops", sortable: false, width: 140, align: "end" },
+      ],
 
-      // basit kurallar
-      r: {
-        req: v => !!v || "Zorunlu",
-        nonneg: v => (v === 0 || !!v) && Number(v) >= 0 || "0 veya daha büyük olmalı"
+      filters: {
+        q: "", categoryId: null, supplierId: null, type: null,
+        ayar: "", karat: null, minGram: null, maxGram: null, inStockOnly: false
       },
 
-      // snackbar
-      snack: { show: false, text: "", color: "success" },
+      dialogs: { product: false },
+      productForm: null,
 
-      // tablolar
-      cartHeaders: [
-        { text: "SKU",          value: "sku" },
-        { text: "Ad",           value: "name" },
-        { text: "Stok",         value: "stock" },
-        { text: "Adet",         value: "qty" },
-        { text: "İndirim",      value: "discountPct" },
-        { text: "Zam",          value: "markupPct" },
-        { text: "Eff. Fiyat",   value: "unitPriceEff" },
-        { text: "Ara Toplam",   value: "subtotal" },
-        { text: "Kâr",          value: "profit" },
-        { text: "",             value: "actions", sortable: false },
+      snack: { show:false, color:"green", text:"" },
+
+      pricingModes: [
+        { text: "Kar % (Markup)", value: "markup" },
+        { text: "Kar TL", value: "profit" },
+        { text: "Hedef Fiyat", value: "target" },
       ],
-      invHeaders: [
-        { text: "SKU",         value: "sku" },
-        { text: "Ad",          value: "name" },
-        { text: "Barkod",      value: "barcode" },
-        { text: "Stok",        value: "qty" },
-        { text: "Birim Maliyet", value: "unitCost" },
-        { text: "Birim Fiyat",   value: "unitPrice" },
-        { text: "",            value: "actions", sortable: false },
-      ],
-      dayHeaders: [
-        { text: "Saat",   value: "time" },
-        { text: "Satır",  value: "lines" },
-        { text: "Toplam", value: "total" },
-        { text: "Maliyet", value: "cogs" },
-        { text: "Kâr",    value: "profit" },
-      ],
+      roundingOptions: ["none","to10","to100","to1000","end_990"],
     };
   },
 
+  created(){
+    try{
+      const cats = get('categories') || [];
+      const sups = get('suppliers')  || [];
+      const prods= get('products')   || [];
+
+      this.categories = cats.map(c => ({ id:c.id, name:c.name, description:c.description || "" }));
+      this.suppliers  = sups.map(s => ({ id:s.id, name:s.name }));
+
+      this.products = prods.map(this.normalizeDbProduct);
+
+      const ro = get('settings.roundingOptions');
+      if(Array.isArray(ro) && ro.length) this.roundingOptions = ro;
+
+    }catch(e){
+      console.error('urunler yüklenemedi:', e);
+      this.categories = [];
+      this.suppliers = [];
+      this.products = [];
+    }
+
+    this.productForm = this.emptyForm();
+  },
+
   computed: {
-    nowStr() {
-      // 12.08.2025 13:45:12 formatına yakın
-      return this.now.toLocaleString("tr-TR", {
-        year: "numeric", month: "2-digit", day: "2-digit",
-        hour: "2-digit", minute: "2-digit", second: "2-digit",
-        hour12: false
+    themeLabel(){ return this.$vuetify.theme.dark ? 'Koyu' : 'Açık' },
+
+    typeOptions(){
+      const set = new Set((this.products||[]).map(p=>p.type).filter(Boolean));
+      return Array.from(set);
+    },
+
+    filteredProducts() {
+      const f = this.filters;
+      const q = (f.q || "").toLowerCase().trim();
+      return (this.products||[]).filter(p => {
+        const txt = [
+          p.name, p.barcode, p.sku, p.type, p.ayar, p.color, p.tags
+        ].join(" ").toLowerCase();
+
+        const passQ     = q ? txt.includes(q) : true;
+        const passCat   = f.categoryId ? p.categoryId === f.categoryId : true;
+        const passSup   = f.supplierId ? p.supplierId === f.supplierId : true;
+        const passType  = f.type ? p.type === f.type : true;
+        const passAyar  = f.ayar ? String(p.ayar).toLowerCase().includes(String(f.ayar).toLowerCase()) : true;
+        const passKarat = f.karat != null && f.karat !== "" ? Number(p.karat) === Number(f.karat) : true;
+        const passMinG  = f.minGram != null && f.minGram !== "" ? Number(p.gram||0) >= Number(f.minGram) : true;
+        const passMaxG  = f.maxGram != null && f.maxGram !== "" ? Number(p.gram||0) <= Number(f.maxGram) : true;
+        const passStock = f.inStockOnly ? Number(p.stock||0) > 0 : true;
+
+        return passQ && passCat && passSup && passType && passAyar && passKarat && passMinG && passMaxG && passStock;
       });
     },
 
-    selectedProduct() {
-      return this.inventory.find(x => x.id === this.selectedId) || null;
+    canSaveProduct() {
+      const f = this.productForm || {};
+      return !!(f.name && f.categoryId && f.supplierId);
     },
 
-    // arama + autocomplete için _label ekleyip filtrelenmiş liste döndürür
-    filteredInventory() {
-      const q = (this.invSearch || "").toString().toLowerCase().trim();
-      const arr = this.inventory.map(it => ({
-        ...it,
-        _label: `${it.name} • ${it.sku}${it.barcode ? " • " + it.barcode : ""}`
-      }));
-      if (!q) return arr;
-      return arr.filter(it =>
-          it.name.toLowerCase().includes(q) ||
-          it.sku.toLowerCase().includes(q) ||
-          (it.barcode || "").toLowerCase().includes(q)
-      );
+    totalStock() {
+      return this.filteredProducts.reduce((t,p)=>t + Number(p.stock||0), 0);
     },
+    stockValueCost() {
+      return this.filteredProducts.reduce((t,p)=>t + Number(p.stock||0) * (Number(p.cost||0)+Number(p.extras||0)), 0);
+    },
+
+    pricePreview() {
+      return priceCalc(this.productForm || {});
+    }
   },
 
   methods: {
-    money(n) {
-      return new Intl.NumberFormat("tr-TR", { style: "currency", currency: "TRY" }).format(Number(n || 0));
-    },
+    /* Tema */
+    setAccent(c){ this.accent = c; localStorage.setItem('jp_accent', c); },
+    cycleTheme(){ this.$vuetify.theme.dark = !this.$vuetify.theme.dark; },
 
-    // v-autocomplete custom filter (case-insensitive)
-    invFilter(item, queryText /*, itemText*/) {
-      const q = (queryText || "").toLowerCase();
-      return (item._label || "").toLowerCase().includes(q);
-    },
-
-    addToCart() {
-      if (!this.selectedProduct || this.addQty <= 0) return;
-      const p = this.selectedProduct;
-
-      // sepet satırı
-      const row = {
-        rowId: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
+    /* --------- DB -> UI Normalizer --------- */
+    normalizeDbProduct(p){
+      const catId = Array.isArray(p.categoryIds) && p.categoryIds.length ? p.categoryIds[0] : null;
+      return {
         id: p.id,
-        sku: p.sku,
-        name: p.name,
-        stock: p.qty,          // o anki stok görüntüsü
-        qty: this.addQty,
-        discountPct: 0,
-        markupPct: 0,
-        unitCost: p.unitCost,
-        unitPrice: p.unitPrice,
-        unitPriceEff: p.unitPrice,
-        subtotal: 0,
-        profit: 0,
+        name: p.isim || p.name || "",
+        categoryId: catId,
+        supplierId: p.supplierId || null,
+        type: p.type || "",
+        karat: p.karat ?? null,
+        ayar: p.ayar ?? "",
+        gram: p.gram ?? null,
+        stock: p.stok ?? p.stock ?? 0,
+        minStock: p.minStock ?? 0,
+        cost: p.cost ?? 0,
+        extras: p.extras ?? 0,
+        pricingMode: p.pricingMode || "markup",
+        markupPercent: p.markupPercent ?? 0,
+        profitTL: p.profitTL ?? 0,
+        targetPrice: p.targetPrice ?? null,
+        vatPercent: p.vatPercent ?? 20,
+        vatIncluded: p.vatIncluded ?? true,
+        rounding: p.rounding || "none",
+        barcode: p.barcode || "",
+        sku: p.sku || "",
+        size: p.size || "",
+        color: (Array.isArray(p.colorOptions) && p.colorOptions.length ? p.colorOptions[0] : (p.color || "")),
+        tags: p.tags || "",
+        description: p.description || ""
       };
-
-      this.recalcRow(row);
-      this.cart.items.push(row);
-      this.recalcCartTotals();
-
-      // seçim sıfırla
-      this.selectedId = null;
-      this.addQty = 1;
     },
 
-    recalcRow(item) {
-      const cost = Number(item.unitCost) || 0;
-      const base = Number(item.unitPrice) || 0;
-      const qty  = Math.max(1, Number(item.qty) || 1);
-
-      const d = Math.min(100, Math.max(0, Number(item.discountPct) || 0));
-      const m = Math.max(0, Number(item.markupPct) || 0);
-
-      // efektif fiyat = (fiyat - indirim) * (1 + zam)
-      const priceAfterDiscount = base * (1 - d / 100);
-      const unitEff = priceAfterDiscount * (1 + m / 100);
-
-      item.unitPriceEff = unitEff;
-      item.subtotal = unitEff * qty;
-      item.profit = (unitEff - cost) * qty;
-
-      this.recalcCartTotals();
+    /* ------------- helpers ------------- */
+    emptyForm(){
+      return {
+        id: null, name: "", categoryId: null, supplierId: null, type: "",
+        karat: null, ayar: "", gram: null,
+        stock: 0, minStock: 0,
+        cost: 0, extras: 0,
+        pricingMode: "markup", markupPercent: 0, profitTL: 0, targetPrice: null,
+        vatPercent: 20, vatIncluded: true, rounding: (this.roundingOptions[0]||"none"),
+        barcode: "", sku: "", size: "", color: "", tags: "", description: ""
+      };
+    },
+    tl(n){ return new Intl.NumberFormat("tr-TR",{style:"currency",currency:"TRY"}).format(n||0); },
+    pct(n){ const v = Number(n||0); return isFinite(v) ? v.toFixed(1) + '%' : '-%'; },
+    toast(text,color="green"){ this.snack = { show:true, color, text }; },
+    newId(){ return Date.now() + Math.floor(Math.random()*1000); },
+    categoryName(id){ return (this.categories.find(c=>c.id===id)||{}).name || "-"; },
+    supplierName(id){ return (this.suppliers.find(s=>s.id===id)||{}).name || "-"; },
+    resetFilters(){
+      this.filters = { q:"", categoryId:null, supplierId:null, type:null, ayar:"", karat:null, minGram:null, maxGram:null, inStockOnly:false };
     },
 
-    recalcCartTotals() {
-      const t = this.cart.items.reduce((acc, it) => {
-        acc.total  += Number(it.subtotal) || 0;
-        acc.cogs   += (Number(it.unitCost) || 0) * (Number(it.qty) || 0);
-        acc.profit += Number(it.profit) || 0;
-        return acc;
-      }, { total: 0, cogs: 0, profit: 0 });
+    // stok
+    incStock(p){ p.stock = Number(p.stock||0) + 1; },
+    decStock(p){ p.stock = Math.max(0, Number(p.stock||0) - 1); },
 
-      this.cart.total = t.total;
-      this.cart.cogs = t.cogs;
-      this.cart.profit = t.profit;
+    priceCalc,
+
+    /* ------------- CRUD (runtime) ------------- */
+    openProductDialog(p=null){
+      this.productForm = p ? { ...p } : this.emptyForm();
+      this.dialogs.product = true;
+    },
+    saveProduct(){
+      const f = this.productForm;
+      if(!f || !f.categoryId || !f.supplierId){
+        this.toast("Kategori ve Toptancı seçmeden ürün eklenemez.","red");
+        return;
+      }
+      const calc = priceCalc(f);
+      const finalPrice = calc.priceGross;
+
+      if(f.id){
+        const i = this.products.findIndex(x=>x.id===f.id);
+        if(i>-1) this.$set(this.products, i, { ...this.products[i], ...f, price: finalPrice });
+        this.toast("Ürün güncellendi");
+      }else{
+        this.products.push({ ...f, id: this.newId(), price: finalPrice });
+        this.toast("Ürün eklendi");
+      }
+      this.dialogs.product = false;
+    },
+    removeProduct(p){
+      if(confirm(`"${p.name}" silinsin mi?`)){
+        const i = this.products.findIndex(x=>x.id===p.id);
+        if(i>-1) this.products.splice(i,1);
+        this.toast("Ürün silindi");
+      }
     },
 
-    removeFromCart(row) {
-      const i = this.cart.items.findIndex(x => x.rowId === row.rowId);
-      if (i >= 0) this.cart.items.splice(i, 1);
-      this.recalcCartTotals();
-    },
-
-    completeSale() {
-      if (this.cart.items.length === 0) return;
-
-      // envanterden düş
-      this.cart.items.forEach(ci => {
-        const inv = this.inventory.find(x => x.id === ci.id);
-        if (inv) inv.qty = Math.max(0, Number(inv.qty) - Number(ci.qty));
+    /* Dışa aktar & Yazdır */
+    exportCSV(){
+      const rows = [["id","name","category","supplier","type","ayar","cost","extras","profitPct","profitTL","vatPercent","priceGross","stock","barcode","sku"]];
+      (this.filteredProducts || []).forEach(p=>{
+        const c = priceCalc(p);
+        rows.push([
+          p.id, p.name, this.categoryName(p.categoryId), this.supplierName(p.supplierId), p.type, p.ayar,
+          p.cost||0, p.extras||0, (c.profitPct||0).toFixed?.(2) ?? c.profitPct, c.profitTL||0, p.vatPercent||0,
+          c.priceGross||0, p.stock||0, p.barcode||"", p.sku||""
+        ]);
       });
-
-      // satış kaydı
-      const sale = {
-        time: new Date().toLocaleTimeString("tr-TR", { hour12: false }),
-        lines: this.cart.items.length,
-        total: this.cart.total,
-        cogs: this.cart.cogs,
-        profit: this.cart.profit,
-        items: this.cart.items.map(x => ({
-          id: x.id, sku: x.sku, name: x.name, qty: x.qty, unitPriceEff: x.unitPriceEff
-        })),
-      };
-      this.day.sales.unshift(sale);
-      this.day.total  += sale.total;
-      this.day.cogs   += sale.cogs;
-      this.day.profit += sale.profit;
-
-      // sepet temizle
-      this.cart = { items: [], total: 0, cogs: 0, profit: 0 };
-
-      this.snack = { show: true, text: "Satış tamamlandı", color: "success" };
+      const csv = rows.map(r => r.join(",")).join("\n");
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url; a.download = "urunler.csv"; a.click();
+      URL.revokeObjectURL(url);
     },
-
-    addInventory() {
-      // Vuetify 2 form doğrulama
-      if (!this.$refs.addForm || !this.$refs.addForm.validate()) return;
-
-      const nextId = (this.inventory.reduce((m, x) => Math.max(m, x.id), 0) || 0) + 1;
-      const p = {
-        id: nextId,
-        sku: String(this.addForm.sku || "").trim(),
-        name: String(this.addForm.name || "").trim(),
-        barcode: String(this.addForm.barcode || "").trim(),
-        qty: Number(this.addForm.qty) || 0,
-        unitCost: Number(this.addForm.unitCost) || 0,
-        unitPrice: Number(this.addForm.unitPrice) || 0,
-      };
-
-      this.inventory.unshift(p);
-      this.dialogs.addItem = false;
-      this.valid.add = false;
-      this.addForm = { sku: "", name: "", barcode: "", qty: 0, unitCost: 0, unitPrice: 0 };
-
-      this.snack = { show: true, text: "Ürün eklendi", color: "success" };
-    },
-
-    removeInventory(item) {
-      const i = this.inventory.findIndex(x => x.id === item.id);
-      if (i >= 0) this.inventory.splice(i, 1);
-      this.snack = { show: true, text: "Ürün silindi", color: "info" };
-    },
-  },
-
-  mounted() {
-    this.timerId = setInterval(() => { this.now = new Date(); }, 1000);
-  },
-  beforeDestroy() {
-    if (this.timerId) clearInterval(this.timerId);
-  },
+    yazdir(){ window.print(); },
+  }
 };
 </script>
 
 <style scoped>
-.soft-card { border-radius: 12px; }
-.nowrap { white-space: nowrap; }
-/* v-text-field 'dense' görünümü biraz sıkılaştırma (hafif dokunuş) */
-.dense .v-input__control { min-height: 36px; }
+/* Drawer */
+.elevated-drawer{
+  border-top-right-radius:16px;
+  border-bottom-right-radius:16px;
+  box-shadow:0 10px 30px rgba(0,0,0,.08);
+}
+
+/* Hero */
+.hero{
+  position:relative; height:120px; overflow:hidden;
+  border-bottom:1px solid rgba(0,0,0,.04);
+}
+.theme--light .hero{ background:linear-gradient(180deg,#ffffff,#fafafa); }
+.theme--dark  .hero{ background:linear-gradient(180deg,#0f1115,#0a0c10); }
+.hero-glow{
+  position:absolute; inset:-30%;
+  background:
+      radial-gradient(90% 60% at 30% 30%, var(--accent) 0%, transparent 60%),
+      radial-gradient(90% 60% at 90% 20%, rgba(99,102,241,.55) 0%, transparent 60%),
+      linear-gradient(180deg, rgba(255,255,255,.35), transparent 60%);
+  animation:float 16s ease-in-out infinite;
+  filter:blur(42px); opacity:.55;
+}
+.theme--dark .hero-glow{ opacity:.35; }
+.hero-content{ position:relative; height:100%; display:flex; flex-direction:column; justify-content:center; padding:12px 24px; }
+.hero-title{ margin:0; font-weight:800; letter-spacing:.2px; }
+.hero-sub{ opacity:.8 }
+
+/* Quick actions */
+.qa{
+  display:flex; align-items:center;
+  padding:10px 14px; margin-right:12px;
+  border-radius:14px; border:1px solid transparent;
+  background:rgba(255,255,255,.7);
+  backdrop-filter:blur(6px);
+  transition:transform .2s ease, box-shadow .2s ease;
+}
+.theme--dark .qa{ background:rgba(30,30,30,.7); }
+.qa:hover{ transform:translateY(-3px); box-shadow:0 10px 20px rgba(0,0,0,.08); }
+
+/* Filters */
+.filters-sheet{
+  border-radius:16px;
+  padding: 6px 16px;
+  border:1px solid rgba(0,0,0,.06);
+  background:rgba(255,255,255,.75);
+  backdrop-filter:blur(8px) saturate(120%);
+}
+.theme--dark .filters-sheet{
+  border-color:rgba(255,255,255,.06);
+  background:rgba(24,24,24,.7);
+}
+
+/* Table */
+.product-table { border-radius: 16px; overflow: hidden; }
+.v-data-table .v-data-table__wrapper { font-size: 0.92rem; }
+
+/* YAZDIR: sadece ürün tablosu */
+@media print {
+  body * { visibility: hidden !important; }
+  #productPrint, #productPrint * { visibility: visible !important; }
+  #productPrint { position: absolute; left: 0; top: 0; width: 100%; }
+}
+
+/* Anim */
+@keyframes float{
+  0%{ transform: translate3d(0,0,0) }
+  50%{ transform: translate3d(2%,-2%,0) }
+  100%{ transform: translate3d(0,0,0) }
+}
+</style>
+
+<style>
+.v-main__wrap{ padding-top:0 !important; }
 </style>
