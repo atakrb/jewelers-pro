@@ -27,7 +27,8 @@
             v-for="it in drawerItems"
             :key="it.to"
             :to="{ name: it.to }"
-            link exact
+            link
+            exact
             class="rounded-lg"
         >
           <v-list-item-icon><v-icon>{{ it.icon }}</v-icon></v-list-item-icon>
@@ -43,7 +44,8 @@
           <v-btn
               v-for="c in accents"
               :key="c"
-              icon small
+              icon
+              small
               :style="{ color: c }"
               @click="setAccent(c)"
           ><v-icon>mdi-circle</v-icon></v-btn>
@@ -55,7 +57,7 @@
           <v-spacer /><v-chip x-small>{{ themeLabel }}</v-chip>
         </v-list-item>
 
-        <v-list-item :to="{ name:'musteriBilgi' }" class="rounded-lg" link>
+        <v-list-item :to="{ name: 'musteriBilgi' }" class="rounded-lg" link>
           <v-list-item-icon><v-icon>mdi-lifebuoy</v-icon></v-list-item-icon>
           <v-list-item-title>Destek</v-list-item-title>
         </v-list-item>
@@ -101,18 +103,29 @@
                 <v-text-field
                     v-model="filters.q"
                     label="Ara (ad, SKU, barkod, karat, ayar)"
-                    dense outlined clearable hide-details
+                    dense
+                    outlined
+                    clearable
+                    hide-details
                     prepend-inner-icon="mdi-magnify"
                     @keyup.enter="onQuickEnter"
                 />
               </v-col>
               <v-col cols="6" md="3">
-                <v-select v-model="filters.category" :items="categoryOptions"
-                          dense outlined hide-details clearable label="Kategori"/>
+                <v-select
+                    v-model="filters.category"
+                    :items="categoryOptions"
+                    dense outlined hide-details clearable
+                    label="Kategori"
+                />
               </v-col>
               <v-col cols="6" md="3">
-                <v-select v-model="filters.type" :items="typeOptions"
-                          dense outlined hide-details clearable label="Tür"/>
+                <v-select
+                    v-model="filters.type"
+                    :items="typeOptions"
+                    dense outlined hide-details clearable
+                    label="Tür"
+                />
               </v-col>
             </v-row>
             <v-row dense class="mt-1">
@@ -273,7 +286,13 @@
                         <v-btn icon x-small @click="incQty(i)"><v-icon small>mdi-plus</v-icon></v-btn>
                       </div>
 
-                      <v-menu offset-y max-width="320px">
+                      <!-- İNDİRİM MENÜSÜ — FIX -->
+                      <v-menu
+                          offset-y
+                          max-width="340px"
+                          :close-on-content-click="false"
+                          transition="scale-transition"
+                      >
                         <template v-slot:activator="{ on, attrs }">
                           <v-btn v-bind="attrs" v-on="on" x-small class="mr-2 glass-btn">
                             <v-icon left x-small>mdi-sale</v-icon>
@@ -286,16 +305,35 @@
                               <v-col cols="6">
                                 <v-select
                                     v-model="s.indirimTip"
-                                    :items="discountTypes" item-text="text" item-value="value"
-                                    dense outlined label="Tür"/>
+                                    :items="discountTypes"
+                                    item-text="text"
+                                    item-value="value"
+                                    dense outlined label="Tür"
+                                    :menu-props="{ closeOnContentClick:false }"
+                                />
                               </v-col>
                               <v-col cols="6">
-                                <v-text-field v-model.number="s.indirimDeger" :disabled="!s.indirimTip"
-                                              type="number" dense outlined label="Değer"/>
+                                <v-text-field
+                                    v-model.number="s.indirimDeger"
+                                    :disabled="!s.indirimTip"
+                                    type="number"
+                                    dense outlined
+                                    label="Değer"
+                                    :min="0"
+                                    :max="s.indirimTip==='pct' ? 100 : null"
+                                    step="0.01"
+                                />
                               </v-col>
                             </v-row>
+
                             <v-checkbox v-model="s.mf" hide-details label="Manuel Fiyat (₺)"/>
-                            <v-text-field v-model.number="s.mfDeger" :disabled="!s.mf" type="number" dense outlined label="Manuel Birim (KDV dahil)"/>
+                            <v-text-field
+                                v-model.number="s.mfDeger"
+                                :disabled="!s.mf"
+                                type="number" dense outlined
+                                label="Manuel Birim (KDV dahil)"
+                                min="0" step="0.01"
+                            />
                             <v-text-field v-model="s.not" dense outlined label="Satır Notu"/>
                           </v-card-text>
                         </v-card>
@@ -426,13 +464,13 @@
             </v-col>
             <v-col cols="6">
               <v-text-field v-model.number="drawer.form.indirimDeger" :disabled="!drawer.form.indirimTip"
-                            type="number" dense outlined label="Değer"/>
+                            type="number" dense outlined label="Değer" :min="0" step="0.01"/>
             </v-col>
           </v-row>
 
           <v-checkbox v-model="drawer.form.mf" hide-details label="Manuel Fiyat (₺, KDV dahil)"/>
           <v-text-field v-model.number="drawer.form.mfDeger" :disabled="!drawer.form.mf"
-                        type="number" dense outlined label="Manuel Birim Fiyat" class="mb-2"/>
+                        type="number" dense outlined label="Manuel Birim Fiyat" class="mb-2" min="0" step="0.01"/>
 
           <v-text-field v-model="drawer.form.not" dense outlined label="Satır Notu"/>
         </v-form>
@@ -465,13 +503,13 @@ export default {
       drawerItems: [
         { title:'Ana Sayfa',    icon:'mdi-view-dashboard-outline', to:'home' },
         { title:'Satış',        icon:'mdi-cash-register',          to:'satis' },
-        { title:'Kargo',        icon:'mdi-truck-outline',          to:'kargo' },
         { title:'Raporlar',     icon:'mdi-file-chart',             to:'raporlar' },
         { title:'Toptancı',     icon:'mdi-storefront-outline',     to:'toptanci' },
         { title:'Kategoriler',  icon:'mdi-shape-outline',          to:'kategoriler' },
         { title:'Ürünler',      icon:'mdi-package-variant-closed', to:'urunler' },
         { title:'Müşteri Bilgi',icon:'mdi-account-group-outline',  to:'musteriBilgi' },
         { title:'Stok',         icon:'mdi-archive-outline',        to:'stok' },
+        { title:'Kargo',        icon:'mdi-truck-outline',          to:'kargo' },
       ],
       quickActions: [
         { key:'Y', icon:'mdi-reload',       title:'Yenile',          subtitle:'Verileri tazele', click:()=>this.yenileDb() },

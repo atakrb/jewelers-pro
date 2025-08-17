@@ -65,8 +65,8 @@
       <div class="hero-glow" :style="{ '--accent': accent }"></div>
       <div class="hero-content">
         <div class="overline mb-1">JEWELERS PRO</div>
-        <h2 class="hero-title">Tüm mağazan tek ekranda.</h2>
-        <div class="hero-sub">Satış, stok, kargo ve raporlar — tek tıkla.</div>
+        <h2 class="hero-title">Kargo & Sipariş Takip</h2>
+        <div class="hero-sub">Sipariş, kargo durumu sorgula.</div>
       </div>
     </div>
 
@@ -396,15 +396,15 @@ export default {
       accent: localStorage.getItem('jp_accent') || '#5865F2',
       accents: ['#5865F2', '#10B981', '#F59E0B', '#F43F5E', '#06B6D4', '#8B5CF6'],
       drawerItems: [
-        { to: 'home', icon: 'mdi-view-dashboard-outline', title: 'Ana Sayfa' },
-        { to: 'satis', icon: 'mdi-cart-outline', title: 'Satış' },
-        { to: 'kargo', icon: 'mdi-truck-outline', title: 'Kargo' },
-        { to: 'raporlar', icon: 'mdi-chart-box-outline', title: 'Raporlar' },
-        { to: 'toptanci', icon: 'mdi-factory', title: 'Toptancı' },
-        { to: 'kategoriler', icon: 'mdi-shape-outline', title: 'Kategoriler' },
-        { to: 'urunler', icon: 'mdi-package-variant-closed', title: 'Ürünler' },
-        { to: 'musteriBilgi', icon: 'mdi-account-outline', title: 'Müşteri Bilgi' },
-        { to: 'stok', icon: 'mdi-archive-outline', title: 'Stok' }
+        { title:'Ana Sayfa',    icon:'mdi-view-dashboard-outline', to:'home' },
+        { title:'Satış',        icon:'mdi-cash-register',          to:'satis' },
+        { title:'Raporlar',     icon:'mdi-file-chart',             to:'raporlar' },
+        { title:'Toptancı',     icon:'mdi-storefront-outline',     to:'toptanci' },
+        { title:'Kategoriler',  icon:'mdi-shape-outline',          to:'kategoriler' },
+        { title:'Ürünler',      icon:'mdi-package-variant-closed', to:'urunler' },
+        { title:'Müşteri Bilgi',icon:'mdi-account-group-outline',  to:'musteriBilgi' },
+        { title:'Stok',         icon:'mdi-archive-outline',        to:'stok' },
+        { title:'Kargo',        icon:'mdi-truck-outline',          to:'kargo' },
       ],
       quick: 'today',
       filters: { q: '', startDate: '', endDate: '', carrier: null, status: null, onlyIssues: false, codOnly: false },
