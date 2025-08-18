@@ -59,6 +59,12 @@
           <v-list-item-icon><v-icon>mdi-lifebuoy</v-icon></v-list-item-icon>
           <v-list-item-title>Destek</v-list-item-title>
         </v-list-item>
+
+
+        <v-list-item :to="{ name:'urunler' }" class="rounded-lg" link>
+          <v-list-item-icon><v-icon>mdi-plus</v-icon></v-list-item-icon>
+          <v-list-item-title>Yeni Sipariş Ekle</v-list-item-title>
+        </v-list-item>
       </v-list>
     </v-navigation-drawer>
 
@@ -73,7 +79,7 @@
     </div>
 
     <!-- HIZLI AKSİYONLAR -->
-    <v-container class="pt-4 pb-0">
+    <v-container fluid class="pt-4 pb-0">
       <v-slide-group show-arrows>
         <v-slide-item v-for="qa in quickActions" :key="qa.key">
           <v-card
@@ -96,7 +102,7 @@
     </v-container>
 
     <!-- FİLTRELER -->
-    <v-container class="pt-4 pb-0">
+    <v-container fluid class="pt-4 pb-0">
       <v-sheet class="filters-sheet">
         <v-row dense>
           <v-col cols="12" md="4">
@@ -134,7 +140,7 @@
     </v-container>
 
     <!-- LİSTE -->
-    <v-container>
+    <v-container fluid>
       <v-card outlined class="table-card">
         <v-data-table
             :headers="headers"

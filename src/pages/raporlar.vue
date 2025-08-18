@@ -59,6 +59,12 @@
           <v-list-item-icon><v-icon>mdi-lifebuoy</v-icon></v-list-item-icon>
           <v-list-item-title>Destek</v-list-item-title>
         </v-list-item>
+
+
+        <v-list-item :to="{ name:'urunler' }" class="rounded-lg" link>
+          <v-list-item-icon><v-icon>mdi-plus</v-icon></v-list-item-icon>
+          <v-list-item-title>Yeni Sipariş Ekle</v-list-item-title>
+        </v-list-item>
       </v-list>
     </v-navigation-drawer>
 

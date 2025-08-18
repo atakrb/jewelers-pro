@@ -4,6 +4,8 @@ import router from './router'
 import vuetify from './plugins/vuetify'
 import { loadDb } from '@/utils/harddata'
 
+//import './assets/style.css'
+
 Vue.config.productionTip = false
 
 async function boot() {
