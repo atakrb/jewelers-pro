@@ -1,6 +1,5 @@
 <template>
   <v-container fluid class="px-0 py-0" :style="{ '--accent': accent }">
-    <!-- SOL YAN MENÜ -->
     <v-navigation-drawer
         v-model="drawer"
         :mini-variant.sync="mini"
@@ -70,7 +69,6 @@
       </v-list>
     </v-navigation-drawer>
 
-    <!-- HERO -->
     <div class="hero">
       <div class="hero-glow" :style="{ '--accent': accent }"></div>
       <div class="hero-content">
@@ -80,7 +78,6 @@
       </div>
     </div>
 
-    <!-- HIZLI AKSİYONLAR -->
     <v-container class="pt-4 pb-0">
       <v-slide-group show-arrows>
         <v-slide-item v-for="qa in quickActions" :key="qa.key">
@@ -97,9 +94,7 @@
       </v-slide-group>
     </v-container>
 
-    <!-- SAYFA GÖVDE -->
     <v-container class="pt-4">
-      <!-- FİLTRE ŞERİDİ -->
       <v-sheet class="filters-sheet sticky-top mb-3">
         <v-row dense>
           <v-col cols="12" md="4">
@@ -139,7 +134,6 @@
         </div>
       </v-sheet>
 
-      <!-- KPI KARTLARI -->
       <div id="stockPrint">
         <v-row dense>
           <v-col cols="12" md="2">
@@ -174,7 +168,6 @@
           </v-col>
         </v-row>
 
-        <!-- STOK TABLOSU -->
         <v-card class="mt-3 table-card" outlined>
           <v-card-title class="subtitle-1 font-weight-bold">Stok Listesi</v-card-title>
           <v-data-table
@@ -182,15 +175,12 @@
               :items="filtered"
               dense fixed-header height="580"
               :items-per-page="12"
+              show-expand
           >
             <template v-slot:item.product="{ item }">
               <div class="font-weight-medium">{{ item.name }}</div>
               <div class="caption grey--text">#{{ item.sku || item.id }} • {{ item.karat ? item.karat + 'k' : '' }} {{ item.ayar }}</div>
             </template>
-            <template v-slot:item.type="{ item }">{{ item.type }}</template>
-            <template v-slot:item.category="{ item }">{{ categoryName(item.categoryId) }}</template>
-            <template v-slot:item.supplier="{ item }">{{ supplierName(item.supplierId) }}</template>
-
             <template v-slot:item.stock="{ item }">
               <v-chip small :color="stockColor(item)" text-color="white">{{ item.stock }}</v-chip>
             </template>
@@ -199,34 +189,62 @@
                 <v-text-field v-model.number="item.minStock" type="number" min="0" dense hide-details class="text-right" style="max-width:80px"/>
               </div>
             </template>
-
-            <template v-slot:item.cost="{ item }">{{ tl(item.cost) }}</template>
-            <template v-slot:item.extras="{ item }">{{ tl(item.extras||0) }}</template>
-            <template v-slot:item.base="{ item }">{{ tl(priceCalc(item).base) }}</template>
             <template v-slot:item.unit="{ item }">{{ tl(priceCalc(item).priceGross) }}</template>
-            <template v-slot:item.profitPP="{ item }">{{ tl(priceCalc(item).profitTL) }}</template>
-            <template v-slot:item.profitPct="{ item }">{{ priceCalc(item).profitPct.toFixed(1) }}%</template>
-            <template v-slot:item.valueBase="{ item }">{{ tl(item.stock * priceCalc(item).base) }}</template>
-            <template v-slot:item.valueRetail="{ item }">{{ tl(item.stock * priceCalc(item).priceGross) }}</template>
 
-            <template v-slot:item.ops="{ item }">
-              <v-btn icon small @click="decStock(item)"><v-icon small>mdi-minus</v-icon></v-btn>
-              <v-btn icon small @click="incStock(item)"><v-icon small>mdi-plus</v-icon></v-btn>
-              <v-menu offset-y>
-                <template v-slot:activator="{ on, attrs }">
-                  <v-btn icon small v-bind="attrs" v-on="on"><v-icon>mdi-dots-vertical</v-icon></v-btn>
-                </template>
-                <v-list dense>
-                  <v-list-item @click="openMovementDialog(item)">
-                    <v-list-item-icon><v-icon>mdi-swap-vertical</v-icon></v-list-item-icon>
-                    <v-list-item-title>Hareket Ekle</v-list-item-title>
-                  </v-list-item>
-                  <v-list-item @click="openHistoryDialog(item)">
-                    <v-list-item-icon><v-icon>mdi-history</v-icon></v-list-item-icon>
-                    <v-list-item-title>Hareket Geçmişi</v-list-item-title>
-                  </v-list-item>
-                </v-list>
-              </v-menu>
+            <template v-slot:expanded-item="{ headers, item }">
+              <td :colspan="headers.length">
+                <v-card flat class="py-4 px-6 my-2 rounded-lg">
+                  <v-row dense>
+                    <v-col cols="12" md="3">
+                      <div class="caption grey--text">Geliş Maliyeti</div>
+                      <div class="subtitle-1 font-weight-bold">{{ tl(item.cost) }}</div>
+                    </v-col>
+                    <v-col cols="12" md="3">
+                      <div class="caption grey--text">Ekstra Giderler</div>
+                      <div class="subtitle-1 font-weight-bold">{{ tl(item.extras || 0) }}</div>
+                    </v-col>
+                    <v-col cols="12" md="3">
+                      <div class="caption grey--text">Baz Fiyat</div>
+                      <div class="subtitle-1 font-weight-bold">{{ tl(priceCalc(item).base) }}</div>
+                    </v-col>
+                    <v-col cols="12" md="3">
+                      <div class="caption grey--text">Kâr/adet</div>
+                      <div class="subtitle-1 font-weight-bold">{{ tl(priceCalc(item).profitTL) }}</div>
+                    </v-col>
+                    <v-col cols="12" md="3">
+                      <div class="caption grey--text">Kâr %</div>
+                      <div class="subtitle-1 font-weight-bold">{{ priceCalc(item).profitPct.toFixed(1) }}%</div>
+                    </v-col>
+                    <v-col cols="12" md="3">
+                      <div class="caption grey--text">Stok Değeri (Baz)</div>
+                      <div class="subtitle-1 font-weight-bold">{{ tl(item.stock * priceCalc(item).base) }}</div>
+                    </v-col>
+                    <v-col cols="12" md="3">
+                      <div class="caption grey--text">Perakende Değeri</div>
+                      <div class="subtitle-1 font-weight-bold">{{ tl(item.stock * priceCalc(item).priceGross) }}</div>
+                    </v-col>
+                    <v-col cols="12" md="3" class="d-flex align-center">
+                      <v-btn icon small @click="decStock(item)"><v-icon small>mdi-minus</v-icon></v-btn>
+                      <v-btn icon small @click="incStock(item)"><v-icon small>mdi-plus</v-icon></v-btn>
+                      <v-menu offset-y>
+                        <template v-slot:activator="{ on, attrs }">
+                          <v-btn icon small v-bind="attrs" v-on="on"><v-icon>mdi-dots-vertical</v-icon></v-btn>
+                        </template>
+                        <v-list dense>
+                          <v-list-item @click="openMovementDialog(item)">
+                            <v-list-item-icon><v-icon>mdi-swap-vertical</v-icon></v-list-item-icon>
+                            <v-list-item-title>Hareket Ekle</v-list-item-title>
+                          </v-list-item>
+                          <v-list-item @click="openHistoryDialog(item)">
+                            <v-list-item-icon><v-icon>mdi-history</v-icon></v-list-item-icon>
+                            <v-list-item-title>Hareket Geçmişi</v-list-item-title>
+                          </v-list-item>
+                        </v-list>
+                      </v-menu>
+                    </v-col>
+                  </v-row>
+                </v-card>
+              </td>
             </template>
 
             <template v-slot:footer.prepend>
@@ -241,7 +259,8 @@
           </v-data-table>
         </v-card>
 
-        <!-- SAYIM MODU -->
+      <!-- SAYIM MODU
+
         <v-card class="mt-4 table-card" outlined>
           <v-card-title class="subtitle-1 font-weight-bold">
             Sayım Modu
@@ -305,10 +324,9 @@
               </v-card-actions>
             </div>
           </v-expand-transition>
-        </v-card>
+        </v-card> -->
       </div>
 
-      <!-- HAREKET DİYALOĞU -->
       <v-dialog v-model="dialogs.movement" max-width="560px">
         <v-card>
           <v-card-title class="subtitle-1 font-weight-bold">{{ moveForm.id ? 'Hareket Düzenle' : 'Yeni Stok Hareketi' }}</v-card-title>
@@ -334,7 +352,6 @@
         </v-card>
       </v-dialog>
 
-      <!-- GEÇMİŞ DİYALOĞU -->
       <v-dialog v-model="dialogs.history" max-width="760px">
         <v-card>
           <v-card-title class="subtitle-1 font-weight-bold">Hareket Geçmişi — {{ history.product?.name }}</v-card-title>
@@ -369,7 +386,7 @@ export default {
       drawer: this.$vuetify?.breakpoint?.lgAndUp || false,
       mini: this.$vuetify?.breakpoint?.lgAndUp || false,
       accent: localStorage.getItem('jp_accent') || '#5865F2',
-      accents: ['#5865F2', '#0EA5E9', '#22C55E', '#F59E0B', '#EF4444', '#8B5CF6'],
+      accents: ["#5B6EF7","#6E7CFF","#7C8AFF","#4FA5FF","#36C2C2","#E5B25E","#8BA0B8"],
       drawerItems: [
         { title:'Ana Sayfa',    icon:'mdi-view-dashboard-outline', to:'home' },
         { title:'Satış',        icon:'mdi-cash-register',          to:'satis' },
@@ -410,15 +427,8 @@ export default {
         { text:'Toptancı', value:'supplier', width:140 },
         { text:'Stok', value:'stock', width:90, align:'end' },
         { text:'Min', value:'minStock', width:100, align:'end' },
-        { text:'Geliş', value:'cost', width:110, align:'end' },
-        { text:'Ekstra', value:'extras', width:110, align:'end' },
-        { text:'Baz', value:'base', width:110, align:'end' },
         { text:'Birim (KDV)', value:'unit', width:140, align:'end' },
-        { text:'Kâr/adet', value:'profitPP', width:120, align:'end' },
-        { text:'Kâr %', value:'profitPct', width:90, align:'end' },
-        { text:'Değer (Baz)', value:'valueBase', width:140, align:'end' },
-        { text:'Değer (Per.)', value:'valueRetail', width:160, align:'end' },
-        { text:'', value:'ops', sortable:false, width:110, align:'end' }
+        { text:'', value:'data-table-expand', sortable:false, align:'end' }
       ],
 
       /* Hareketler (opsiyonel) */
@@ -778,8 +788,4 @@ export default {
   50%{ transform:translate3d(2%,-2%,0) }
   100%{ transform:translate3d(0,0,0) }
 }
-</style>
-
-<style>
-.v-main__wrap{ padding-top:0 !important; }
 </style>

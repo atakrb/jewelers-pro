@@ -57,7 +57,7 @@
       "notes": "",
       "items": [
         {
-          "id": 21, "name": "Gümüş Kolye", "karat": 0, "ayar": "925",
+          "id": 86918091, "name": "Gümüş Kolye", "karat": 0, "ayar": "925",
           "qty": 15, "cost": 700, "extras": 50,
           "pricingMode": "profit", "markupPercent": 0, "profitTL": 300, "targetPrice": null,
           "vatPercent": 20, "vatIncluded": true, "rounding": "to10",
@@ -69,11 +69,19 @@
           "pricingMode": "target", "markupPercent": 0, "profitTL": 0, "targetPrice": 990,
           "vatPercent": 20, "vatIncluded": true, "rounding": "end_990",
           "buyDate": "2025-08-06", "invoiceNo": "B-20250806-002"
+        },
+        {
+          "id": 400, "name": "Test Kolye (86940573)", "karat": 0, "ayar": "925",
+          "qty": 9, "cost": 500, "extras": 50,
+          "pricingMode": "profit", "markupPercent": 0, "profitTL": 250, "targetPrice": null,
+          "vatPercent": 20, "vatIncluded": true, "rounding": "to10",
+          "buyDate": "2025-08-18", "invoiceNo": "B-20250818-003"
         }
       ],
       "invoices": [
-        { "id": 20001, "number": "B-20250806-001", "date": "2025-08-06", "total": 11250, "url": "", "note": "Gümüş Kolye (15 adet)" },
-        { "id": 20002, "number": "B-20250806-002", "date": "2025-08-06", "total": 6900,  "url": "", "note": "Gümüş Bileklik (10 adet)" }
+        { "id": 20001, "number": "86918091", "date": "2025-08-06", "total": 11250, "url": "", "note": "Gümüş Kolye (15 adet)" },
+        { "id": 20002, "number": "B-20250806-002", "date": "2025-08-06", "total": 6900,  "url": "", "note": "Gümüş Bileklik (10 adet)" },
+        { "id": 20003, "number": "B-20250818-003", "date": "2025-08-18", "total": 4950,  "url": "", "note": "Test Kolye (9 adet, barkod 86940573)" }
       ]
     },
     {
@@ -100,11 +108,11 @@
 
   "products": [
     {
-      "id": 101, "sku": "PRL-YZK-001",
+      "id": 101, "sku": "86940573",
       "name": "Tektaş Yüzük", "isim": "Tektaş Yüzük",
       "type": "Yüzük", "karat": 18, "ayar": "18 Ayar",
       "stock": 3, "stok": 3,
-      "barcode": "8690000001011",
+      "barcode": "86918091",
       "cost": 18000, "extras": 500,
       "pricingMode": "markup", "markupPercent": 20, "profitTL": null, "targetPrice": null,
       "vatPercent": 20, "vatIncluded": true, "rounding": "to100",
@@ -132,7 +140,7 @@
       "name": "Gümüş Kolye", "isim": "Gümüş Kolye",
       "type": "Kolye", "karat": 0, "ayar": "925",
       "stock": 12, "stok": 12,
-      "barcode": "8690000002015",
+      "barcode": "86918091",
       "cost": 700, "extras": 50,
       "pricingMode": "profit", "markupPercent": null, "profitTL": 300, "targetPrice": null,
       "vatPercent": 20, "vatIncluded": true, "rounding": "to10",
@@ -196,6 +204,20 @@
       "supplierId": 3,
       "categoryId": "set",
       "categoryIds": ["diamond", "set"]
+    },
+    {
+      "id": 400, "sku": "DEN-86940573",
+      "name": "Test Kolye (Genel)", "isim": "Test Kolye (Genel)",
+      "type": "Kolye", "karat": 0, "ayar": "925",
+      "stock": 9, "stok": 9,
+      "barcode": "86940573",
+      "cost": 500, "extras": 50,
+      "pricingMode": "profit", "markupPercent": null, "profitTL": 250, "targetPrice": null,
+      "vatPercent": 20, "vatIncluded": true, "rounding": "to10",
+      "colorOptions": [],
+      "supplierId": 2,
+      "categoryId": "necklace",
+      "categoryIds": ["silver", "necklace"]
     }
   ],
 
@@ -336,14 +358,15 @@
     { "id": "sm-3", "date": "2025-08-06T11:00:00.000Z", "productId": 201, "type": "in",  "qty": 12, "reason": "Alış",  "refType": "supplier", "refId": 2 },
     { "id": "sm-4", "date": "2025-08-07T12:00:00.000Z", "productId": 301, "type": "in",  "qty": 5,  "reason": "Alış",  "refType": "supplier", "refId": 3 },
     { "id": "sm-5", "date": "2025-08-15T10:25:00.000Z", "productId": 301, "type": "out", "qty": 1,  "reason": "Satış", "refType": "order",    "refId": 1002 },
-    { "id": "sm-6", "date": "2025-08-16T11:20:00.000Z", "productId": 201, "type": "out", "qty": 1,  "reason": "Satış", "refType": "order",    "refId": 1001 }
+    { "id": "sm-6", "date": "2025-08-16T11:20:00.000Z", "productId": 201, "type": "out", "qty": 1,  "reason": "Satış", "refType": "order",    "refId": 1001 },
+    { "id": "sm-7", "date": "2025-08-18T09:00:00.000Z", "productId": 400, "type": "in",  "qty": 9,  "reason": "Alış",  "refType": "supplier", "refId": 2 }
   ],
 
   "counters": {
-    "nextProductId": 400,
+    "nextProductId": 401,
     "nextOrderId": 1004,
     "nextShipmentId": 4,
     "nextCustomerId": 5004,
-    "nextStockMoveId": 7
+    "nextStockMoveId": 8
   }
 }

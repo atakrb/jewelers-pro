@@ -1,6 +1,7 @@
 <template>
   <v-container fluid class="px-0 py-0">
 
+    <!-- SOL MENÜ: FONKSİYONLAR AYNI -->
     <v-navigation-drawer
         v-model="drawer"
         :mini-variant.sync="mini"
@@ -27,8 +28,7 @@
             v-for="it in drawerItems"
             :key="it.to"
             :to="{ name: it.to }"
-            link
-            exact
+            link exact
             class="rounded-lg"
         >
           <v-list-item-icon><v-icon>{{ it.icon }}</v-icon></v-list-item-icon>
@@ -55,7 +55,6 @@
           <v-spacer/><v-chip x-small>{{ themeLabel }}</v-chip>
         </v-list-item>
 
-
         <v-list-item :to="{ name:'musteriBilgi' }" class="rounded-lg" link>
           <v-list-item-icon><v-icon>mdi-lifebuoy</v-icon></v-list-item-icon>
           <v-list-item-title>Destek</v-list-item-title>
@@ -65,23 +64,22 @@
           <v-list-item-icon><v-icon>mdi-plus</v-icon></v-list-item-icon>
           <v-list-item-title>Yeni Sipariş Ekle</v-list-item-title>
         </v-list-item>
-
-
-
       </v-list>
     </v-navigation-drawer>
 
+    <!-- HERO -->
+<v-row>
+  <v-col cols="1"><a href="https://www.shopier.com/ShulesFines"><img style="height: 127px; width:135px" src="https://i.etsystatic.com/41872415/r/isla/718c5b/61411742/isla_180x180.61411742_m1dinmtg.jpg"><img></a></v-col>
 
-
-    <!-- HEADER HERO (kompakt, üst boşluğu kapatır) -->
-    <div class="hero">
-      <div class="hero-glow" :style="{ '--accent': accent }"></div>
-      <div class="hero-content">
-        <div class="overline mb-1">JEWELERS PRO</div>
-        <h2 class="hero-title">Tüm mağazan tek ekranda.</h2>
-        <div class="hero-sub">Satış, stok, kargo ve raporlar — tek tıkla.</div>
-      </div>
+  <v-col cols="11">           <div class="hero">
+    <div class="hero-glow" :style="{ '--accent': accent }"></div>
+    <div class="hero-content"> <div class="overline mb-1">JEWELERS PRO</div>
+      <h2 class="hero-title"> Shulesfines</h2>
     </div>
+  </div></v-col>
+</v-row>
+
+
 
     <!-- HIZLI AKSİYONLAR -->
     <v-container class="pt-4 pb-0">
@@ -108,49 +106,40 @@
             :key="card.to"
             cols="12" sm="6" md="4" lg="3"
         >
-          <v-hover v-slot="{ hover }">
-            <v-card
-                :to="{ name: card.to }"
-                link
-                class="menu-card"
-                :elevation="hover ? 16 : 6"
-                :style="cardStyle(i, hover)"
-            >
-              <!-- Accent'e bağlı üst glow -->
-              <div class="card-top-glow"></div>
+          <v-card
+              :to="{ name: card.to }"
+              link
+              class="menu-card"
+              :elevation="0"
+              :style="cardStyle(i)"
+          >
+            <!-- üst cam/ışık -->
+            <div class="card-sheen"></div>
 
-              <!-- Favori (sadece yıldız, sayı/badge yok) -->
-              <v-tooltip bottom>
-                <template v-slot:activator="{ on, attrs }">
-                  <v-btn
-                      absolute top right small icon class="fav-btn"
-                      v-bind="attrs" v-on="on"
-                      :color="isFav(card) ? accent : ''"
-                      @click.stop="toggleFav(card)"
-                  >
-                    <v-icon>{{ isFav(card) ? 'mdi-star' : 'mdi-star-outline' }}</v-icon>
-                  </v-btn>
-                </template>
-                <span>Favorilere {{ isFav(card) ? 'çıkar' : 'ekle' }}</span>
-              </v-tooltip>
+            <!-- Fav -->
+            <v-tooltip bottom>
+              <template v-slot:activator="{ on, attrs }">
+                <v-btn
+                    absolute top right small icon class="fav-btn"
+                    v-bind="attrs" v-on="on"
+                    :color="isFav(card) ? accent : ''"
+                    @click.stop="toggleFav(card)"
+                >
+                  <v-icon>{{ isFav(card) ? 'mdi-star' : 'mdi-star-outline' }}</v-icon>
+                </v-btn>
+              </template>
+              <span>Favorilere {{ isFav(card) ? 'çıkar' : 'ekle' }}</span>
+            </v-tooltip>
 
-              <div class="mc-hero" :style="heroStyle(card)">
-                <v-icon class="mc-icon">{{ card.icon }}</v-icon>
-                <!-- numara rozetleri tamamen kaldırıldı -->
-                <div class="mc-shine" />
-              </div>
+            <div class="mc-hero">
+              <v-icon class="mc-icon">{{ card.icon }}</v-icon>
+            </div>
 
-              <div class="px-4 py-3">
-                <div class="d-flex align-center">
-                  <div>
-                    <div class="subtitle-1 font-weight-bold">{{ card.title }}</div>
-                    <div class="caption grey--text text--darken-1">{{ card.subtitle }}</div>
-                  </div>
-                  <v-spacer/>
-                </div>
-              </div>
-            </v-card>
-          </v-hover>
+            <div class="px-4 pb-4">
+              <div class="subtitle-1 font-weight-bold">{{ card.title }}</div>
+              <div class="caption grey--text text--lighten-1">{{ card.subtitle }}</div>
+            </div>
+          </v-card>
         </v-col>
       </v-row>
     </v-container>
@@ -166,8 +155,10 @@ export default {
       drawer: this.$vuetify?.breakpoint?.lgAndUp || false,
       mini: this.$vuetify?.breakpoint?.lgAndUp || false,
       query: "",
-      theme: localStorage.getItem("jp_theme_mode") || "auto",     // auto | light | dark
-      accent: localStorage.getItem("jp_accent") || "#5865F2",
+      theme: localStorage.getItem("jp_theme_mode") || "auto", // auto | light | dark
+      // seçtiğin lacivert/indigo
+      accent: localStorage.getItem("jp_accent") || "#5B6EF7",
+
       favorites: new Set(JSON.parse(localStorage.getItem("jp_favs") || "[]")),
       drawerItems: [
         { title:'Ana Sayfa',    icon:'mdi-view-dashboard-outline', to:'home' },
@@ -180,17 +171,18 @@ export default {
         { title:'Stok',         icon:'mdi-archive-outline',        to:'stok' },
         { title:'Kargo',        icon:'mdi-truck-outline',          to:'kargo' },
       ],
+      // (kart renkleri tek tip koyu yüzey; başlıktaki iconu beyaz tutuyoruz)
       cards: [
-        { title:"SATIŞ EKRANI",     subtitle:"Hızlı satış işlemleri",   icon:"mdi-cash-register",           to:"satis",       colors:["#6a11cb","#2575fc"] },
-        { title:"RAPORLAR",         subtitle:"Grafikler ve özetler",    icon:"mdi-file-chart",              to:"raporlar",    colors:["#00c6ff","#0072ff"] },
-        { title:"TOPTANCI",         subtitle:"Toptan alım/satım",       icon:"mdi-storefront-outline",      to:"toptanci",    colors:["#11998e","#38ef7d"] },
-        { title:"KATEGORİLER",      subtitle:"Ürün grupları",           icon:"mdi-shape-outline",           to:"kategoriler", colors:["#00b09b","#96c93d"] },
-        { title:"ÜRÜNLER",          subtitle:"Liste & yönetim",         icon:"mdi-package-variant-closed",  to:"urunler",     colors:["#fc4a1a","#f7b733"] },
-        { title:"MÜŞTERİ BİLGİLERİ",subtitle:"Kayıt ve hareketler",     icon:"mdi-account-group-outline",   to:"musteriBilgi",colors:["#8E2DE2","#4A00E0"] },
-        { title:"STOK",             subtitle:"Giriş/çıkış & sayım",     icon:"mdi-archive-outline",         to:"stok",        colors:["#ee0979","#ff6a00"] },
-        { title:"KARGO",            subtitle:"Gönderi ve takip",        icon:"mdi-truck-outline",           to:"kargo",       colors:["#36D1DC","#5B86E5"] }
+        { title:"SATIŞ EKRANI",     subtitle:"Hızlı satış işlemleri",   icon:"mdi-cash-register",           to:"satis" },
+        { title:"RAPORLAR",         subtitle:"Grafikler ve özetler",    icon:"mdi-file-chart",              to:"raporlar" },
+        { title:"TOPTANCI",         subtitle:"Toptan alım/satım",       icon:"mdi-storefront-outline",      to:"toptanci" },
+        { title:"KATEGORİLER",      subtitle:"Ürün grupları",           icon:"mdi-shape-outline",           to:"kategoriler" },
+        { title:"ÜRÜNLER",          subtitle:"Liste & yönetim",         icon:"mdi-package-variant-closed",  to:"urunler" },
+        { title:"MÜŞTERİ BİLGİLERİ",subtitle:"Kayıt ve hareketler",     icon:"mdi-account-group-outline",   to:"musteriBilgi" },
+        { title:"STOK",             subtitle:"Giriş/çıkış & sayım",     icon:"mdi-archive-outline",         to:"stok" },
+        { title:"KARGO",            subtitle:"Gönderi ve takip",        icon:"mdi-truck-outline",           to:"kargo" }
       ],
-      accents: ["#5865F2","#0EA5E9","#22C55E","#F59E0B","#EF4444","#8B5CF6"],
+      accents: ["#5B6EF7","#6E7CFF","#7C8AFF","#4FA5FF","#36C2C2","#E5B25E","#8BA0B8"],
       quickActions: [
         { title:"Yeni Satış",    subtitle:"Fiş oluştur",      icon:"mdi-flash",         to:"satis",   key:"S" },
         { title:"Ürün Ekle",     subtitle:"Stoka ekle",       icon:"mdi-plus-box",      to:"urunler", key:"U" },
@@ -207,55 +199,20 @@ export default {
       const q = this.query.trim().toLowerCase();
       let list = [...this.cards];
       if (q) list = list.filter(c => (c.title + " " + c.subtitle).toLowerCase().includes(q));
-      // favoriler öne
       list.sort((a,b) => Number(this.isFav(b)) - Number(this.isFav(a)));
       return list;
     }
   },
   methods: {
-    // hero arka plan
-    heroStyle(c) {
-      const [a,b] = c.colors || ["#6a11cb","#2575fc"];
-      return `
-        background:
-          radial-gradient(80% 120% at 0% 0%, rgba(255,255,255,.20), transparent 60%),
-          linear-gradient(135deg, ${a}, ${b});
-      `;
-    },
-    // kart görsel değişkenleri
-    cardStyle(i, hover){
+    // kart görünümü (gölge yok; koyu yüzey + ince kenar + cam parıltı üstte)
+    cardStyle(){
       return {
         '--accent': this.accent,
-        '--glow': this.glowColorByIndex(i),     // farklı kartlara hafifçe değişen ton
-        transform: hover ? 'translateY(-6px) rotateX(0.8deg) rotateY(-0.8deg)' : 'translateY(0)',
+        border: this.$vuetify?.theme?.dark ? '1px solid rgba(255,255,255,.06)' : '1px solid rgba(10,14,20,.08)',
+        background: this.$vuetify?.theme?.dark
+            ? 'linear-gradient(180deg, #1B1F2A 0%, #141821 100%)'
+            : 'linear-gradient(180deg, #FFFFFF 0%, #F7F8FC 100%)',
       };
-    },
-    glowColorByIndex(i){
-      // accent'ten 20° kaydırılmış HSL ton
-      const {h,s,l} = this.hexToHsl(this.accent);
-      const hue = (h + (i*20)) % 360;
-      return `hsl(${hue} ${s}% ${Math.max(30,l-5)}%)`;
-    },
-    hexToHsl(hex){
-      let c = hex.replace('#','');
-      if(c.length===3) c = c.split('').map(x=>x+x).join('');
-      const r = parseInt(c.substr(0,2),16)/255;
-      const g = parseInt(c.substr(2,2),16)/255;
-      const b = parseInt(c.substr(4,2),16)/255;
-      const max=Math.max(r,g,b), min=Math.min(r,g,b);
-      let h,s,l=(max+min)/2;
-      if(max===min){ h=0; s=0; }
-      else{
-        const d = max-min;
-        s = l>0.5 ? d/(2-max-min) : d/(max+min);
-        switch(max){
-          case r: h=(g-b)/d + (g<b?6:0); break;
-          case g: h=(b-r)/d + 2; break;
-          case b: h=(r-g)/d + 4; break;
-        }
-        h = Math.round(h*60);
-      }
-      return {h, s:Math.round(s*100), l:Math.round(l*100)};
     },
 
     // tema & accent
@@ -267,6 +224,7 @@ export default {
       } else {
         this.$vuetify.theme.dark = this.theme === 'dark';
       }
+      document.documentElement.style.setProperty('--accent', this.accent);
     },
     cycleTheme(){
       this.theme = this.theme === 'auto' ? 'light' : this.theme === 'light' ? 'dark' : 'auto';
@@ -276,6 +234,7 @@ export default {
     setAccent(c){
       this.accent = c;
       localStorage.setItem('jp_accent', c);
+      this.applyTheme();
     },
 
     // favoriler
@@ -286,7 +245,7 @@ export default {
       localStorage.setItem('jp_favs', JSON.stringify(Array.from(this.favorites)));
     },
 
-    // klavye kısayolları
+    // kısayollar
     focusSearch() {
       const el = this.$el.querySelector('.menu-search input');
       el && el.focus();
@@ -307,7 +266,6 @@ export default {
   mounted() {
     this.applyTheme();
     window.addEventListener('keydown', this.handleKey);
-    // auto tema takibi
     this._mq = window.matchMedia('(prefers-color-scheme: dark)');
     this._mqListener = () => this.applyTheme();
     this._mq.addEventListener?.('change', this._mqListener);
@@ -320,127 +278,125 @@ export default {
 </script>
 
 <style scoped>
-/* DRAWER */
+/* === DRAWER: lacivert/sSlate, gölge yok === */
 .elevated-drawer{
   border-top-right-radius: 16px;
   border-bottom-right-radius: 16px;
-  box-shadow: 0 10px 30px rgba(0,0,0,.08);
+  box-shadow: none;
+  background: var(--drawer-bg);
+  border-right: 1px solid var(--drawer-border);
 }
 
-/* HERO: kompakt */
+/* === HERO: lacivert gradient bar === */
 .hero{
   position: relative;
-  height: 120px;
+  height: 128px;
   overflow: hidden;
-  border-bottom: 1px solid rgba(0,0,0,.04);
+  border-bottom: 1px solid var(--hairline);
+  background:
+      radial-gradient(100% 60% at 10% 0%, rgba(91,110,247,.18), transparent 50%),
+      linear-gradient(180deg, var(--hero-top) 0%, var(--hero-bottom) 100%);
 }
-.theme--light .hero{ background: linear-gradient(180deg,#ffffff, #fafafa); }
-.theme--dark  .hero{ background: linear-gradient(180deg,#0f1115, #0a0c10); }
-
 .hero-glow{
   position:absolute; inset:-30%;
   background:
-      radial-gradient(90% 60% at 30% 30%, var(--accent) 0%, transparent 60%),
-      radial-gradient(90% 60% at 90% 20%, rgba(99,102,241,.55) 0%, transparent 60%),
-      linear-gradient(180deg, rgba(255,255,255,.35), transparent 60%);
-  animation: float 16s ease-in-out infinite;
+      radial-gradient(80% 60% at 25% 15%, var(--accent, #5B6EF7) 0%, transparent 60%),
+      radial-gradient(70% 50% at 80% 20%, rgba(91,110,247,.35) 0%, transparent 60%);
   filter: blur(42px);
-  opacity:.55;
+  opacity:.45;
 }
-.theme--dark .hero-glow{ opacity:.35; }
-
 .hero-content{
   position: relative;
   height:100%;
   display:flex; flex-direction:column; justify-content:center;
-  padding: 12px 24px;
+  padding: 16px 24px;
 }
 .hero-title{ margin:0; font-weight:800; letter-spacing:.2px; }
 .hero-sub{ opacity:.8 }
 
-/* QUICK ACTIONS */
+/* === QUICK ACTIONS: accent kenarlı, cam efekti === */
 .qa{
   display:flex; align-items:center;
   padding: 10px 14px; margin-right:12px;
   border-radius: 14px;
-  border: 1px solid transparent;
-  background: rgba(255,255,255,.75);
+  border: 1px solid var(--hairline-strong);
+  background: var(--qa-bg);
   backdrop-filter: blur(6px);
-  transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+  transition: transform .18s ease, border-color .18s ease;
+  box-shadow: none;
 }
-.theme--dark .qa{ background: rgba(30,30,30,.65); }
-.qa:hover{
-  transform: translateY(-3px);
-  box-shadow: 0 10px 20px rgba(0,0,0,.08);
-}
+.qa:hover{ transform: translateY(-2px); }
 
-/* KARTLAR */
+/* === ANA KARTLAR: koyu yüzey + üst sheen (gölge yok) === */
 .menu-card{
   position: relative;
   min-height: 190px;
   border-radius: 18px;
   overflow: hidden;
-  transition: transform .22s ease, box-shadow .22s ease, border-color .22s ease;
-  box-shadow: 0 2px 10px rgba(0,0,0,.06);
-  background: #fff;
-  border: 1px solid #eef0f3;
+  box-shadow: none;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  transition: transform .14s ease, border-color .14s ease;
 }
-.theme--light .menu-card{
-  background: linear-gradient(180deg,#ffffff 0%, #fbfbfb 100%);
-}
-.theme--dark .menu-card{
-  background: #171717;
-  border-color: rgba(255,255,255,.06);
-}
+.menu-card:hover{ transform: translateY(-3px); border-color: var(--accent); }
 
-/* üst renkli glow — accent'e bağlı */
-.card-top-glow{
-  position:absolute; inset:-30%;
-  background:
-      radial-gradient(90% 60% at 30% 30%, var(--accent) 0%, transparent 60%),
-      radial-gradient(90% 60% at 90% 20%, rgba(99,102,241,.55) 0%, transparent 60%),
-      linear-gradient(180deg, rgba(255,255,255,.35), transparent 60%);
-  animation: float 16s ease-in-out infinite;
-  filter: blur(42px);
-  opacity:.55;
-}
-.theme--dark .card-top-glow{ opacity:.32; }
-
-.menu-card:hover{
-  box-shadow: 0 10px 24px rgba(0,0,0,.12);
-  border-color: var(--accent);
-}
-
-/* HERO BLOKU kart içi */
-@media (max-width:960px){ .mc-hero{ height:110px } }
-@media (max-width:600px){ .mc-hero{ height:95px } }
-.mc-hero{
-  height:130px; position: relative;
-  display:flex; align-items:center; justify-content:center;
-  z-index: 1; /* glow'un üstünde */
-}
-.mc-icon{
-  font-size:56px; color:#fff;
-  text-shadow:0 8px 24px rgba(0,0,0,.25);
-}
-.mc-shine{
+/* üst cam parıltısı */
+.card-sheen{
   content:""; position:absolute; inset:0; pointer-events:none;
-  background: radial-gradient(120% 80% at 100% 0%, rgba(255,255,255,.28), transparent 60%);
+  background:
+      radial-gradient(120% 100% at 50% -10%, rgba(255,255,255,.06), transparent 45%),
+      radial-gradient(80% 60% at 80% 10%, rgba(255,255,255,.03), transparent 55%);
+  mix-blend-mode: screen;
 }
 
-/* Fav button */
+@media (max-width:960px){ .mc-hero{ height:110px } }
+@media (max-width:600px){ .mc-hero{ height:96px } }
+.mc-hero{
+  height:130px; display:flex; align-items:center; justify-content:center;
+}
+.mc-icon{ font-size:56px; color:#fff; }
+
+/* Fav btn öncelik */
 .fav-btn{ z-index:2; }
-
-/* Animations */
-@keyframes float{
-  0%{ transform: translate3d(0,0,0) rotate(0deg); }
-  50%{ transform: translate3d(2%, -2%, 0) rotate(1deg); }
-  100%{ transform: translate3d(0,0,0) rotate(0deg); }
-}
 </style>
 
-<!-- ÜST BOŞLUĞU TAMAMEN KAPATMAK İÇİN (scoped değil) -->
+<!-- GLOBAL TOKENS + FONT -->
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+:root{
+  /* LIGHT */
+  --bg: #F6F8FB;
+  --hero-top: #EEF2FF;
+  --hero-bottom: #E6EBFF;
+  --drawer-bg: linear-gradient(180deg, rgba(255,255,255,.7), rgba(255,255,255,.5));
+  --drawer-border: rgba(91,110,247,.25);
+  --hairline: rgba(10,14,20,.08);
+  --hairline-strong: rgba(10,14,20,.12);
+  --qa-bg: rgba(255,255,255,.85);
+  --card-bg: linear-gradient(180deg,#FFFFFF 0%, #F7F8FC 100%);
+  --card-border: rgba(10,14,20,.08);
+}
+.theme--dark{
+  /* DARK — aynı tonların 2-3 tık koyusu */
+  --bg: #0C0F14;
+  --hero-top: #0E1320;
+  --hero-bottom: #0A0E14;
+  --drawer-bg: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,0));
+  --drawer-border: rgba(255,255,255,.08);
+  --hairline: rgba(255,255,255,.06);
+  --hairline-strong: rgba(255,255,255,.10);
+  --qa-bg: rgba(28,28,36,.65);
+  --card-bg: linear-gradient(180deg,#1B1F2A 0%, #141821 100%);
+  --card-border: rgba(255,255,255,.06);
+}
+
+/* global */
+html, body, .v-application {
+  font-family: Inter, Roboto, -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, "Apple Color Emoji","Segoe UI Emoji", "Segoe UI Symbol", sans-serif !important;
+  background: var(--bg) !important;
+}
+
 /* v-main default top padding'i iptal et */
 .v-main__wrap { padding-top: 0 !important; }
 </style>

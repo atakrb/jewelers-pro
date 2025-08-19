@@ -1,13 +1,11 @@
 <template>
   <v-container fluid class="px-0 py-0" :style="{ '--accent': accent }">
-    <!-- SOL MENÜ -->
     <v-navigation-drawer
         v-model="drawer"
         :mini-variant.sync="mini"
         :permanent="$vuetify.breakpoint.lgAndUp"
         expand-on-hover
-        app
-        width="280"
+        app width="280"
         class="elevated-drawer"
     >
       <v-list dense>
@@ -25,10 +23,8 @@
 
         <v-list-item
             v-for="it in drawerItems"
-            :key="it.to"
-            :to="{ name: it.to }"
-            link exact
-            class="rounded-lg"
+            :key="it.to" :to="{ name: it.to }"
+            link exact class="rounded-lg"
         >
           <v-list-item-icon><v-icon>{{ it.icon }}</v-icon></v-list-item-icon>
           <v-list-item-title>{{ it.title }}</v-list-item-title>
@@ -41,10 +37,8 @@
           <v-list-item-title>Vurgu</v-list-item-title>
           <v-spacer/>
           <v-btn
-              v-for="c in accents"
-              :key="c"
-              icon small
-              :style="{ color: c }"
+              v-for="c in accents" :key="c"
+              icon small :style="{ color: c }"
               @click="setAccent(c)"
           ><v-icon>mdi-circle</v-icon></v-btn>
         </v-list-item>
@@ -60,7 +54,6 @@
           <v-list-item-title>Destek</v-list-item-title>
         </v-list-item>
 
-
         <v-list-item :to="{ name:'urunler' }" class="rounded-lg" link>
           <v-list-item-icon><v-icon>mdi-plus</v-icon></v-list-item-icon>
           <v-list-item-title>Yeni Sipariş Ekle</v-list-item-title>
@@ -68,7 +61,6 @@
       </v-list>
     </v-navigation-drawer>
 
-    <!-- HERO -->
     <div class="hero">
       <div class="hero-glow" :style="{ '--accent': accent }"></div>
       <div class="hero-content">
@@ -78,7 +70,6 @@
       </div>
     </div>
 
-    <!-- HIZLI AKSİYONLAR -->
     <v-container fluid class="pt-4 pb-0">
       <v-slide-group show-arrows>
         <v-slide-item v-for="qa in quickActions" :key="qa.key">
@@ -101,14 +92,12 @@
       </v-slide-group>
     </v-container>
 
-    <!-- FİLTRELER -->
     <v-container fluid class="pt-4 pb-0">
       <v-sheet class="filters-sheet">
         <v-row dense>
           <v-col cols="12" md="4">
             <v-text-field
-                v-model="filters.q"
-                dense outlined clearable hide-details
+                v-model="filters.q" dense outlined clearable hide-details
                 label="Ara (ad, telefon, e-posta, adres)"
                 prepend-inner-icon="mdi-magnify"
             />
@@ -139,7 +128,6 @@
       </v-sheet>
     </v-container>
 
-    <!-- LİSTE -->
     <v-container fluid>
       <v-card outlined class="table-card">
         <v-data-table
@@ -147,9 +135,7 @@
             :items="filteredCustomers"
             :items-per-page="10"
             item-key="id"
-            show-expand
-            :expanded.sync="expanded"
-            dense fixed-header height="620"
+            dense fixed-header
             class="px-2 elevated-datatable"
         >
           <template v-slot:item.customer="{ item }">
@@ -158,12 +144,19 @@
           </template>
 
           <template v-slot:item.contact="{ item }">
-            <div>{{ item.phone || '-' }}</div>
+            <div class="d-flex align-center">
+              <span class="mr-2">{{ item.phone || '-' }}</span>
+              <v-btn v-if="item.phone" icon x-small :href="'tel:' + item.phone"><v-icon small>mdi-phone</v-icon></v-btn>
+              <v-btn v-if="item.phone" icon x-small :href="waLink(item.phone)" target="_blank"><v-icon small color="green">mdi-whatsapp</v-icon></v-btn>
+            </div>
             <div class="caption grey--text">{{ item.email || '-' }}</div>
           </template>
 
           <template v-slot:item.addressShort="{ item }">
-            {{ item.addressShort || '-' }}
+            <div class="d-flex align-center">
+              <span class="mr-2">{{ item.addressShort || '-' }}</span>
+              <v-btn v-if="item.addressShort" icon x-small @click="copy(item.addressShort)"><v-icon small>mdi-content-copy</v-icon></v-btn>
+            </div>
           </template>
 
           <template v-slot:item.lastOrderAt="{ item }">
@@ -174,8 +167,7 @@
             <div class="d-flex flex-wrap">
               <v-chip
                   v-for="(p,i) in item.platforms"
-                  :key="p + i"
-                  x-small class="mr-1 mb-1"
+                  :key="p + i" x-small class="mr-1 mb-1"
                   :color="accent" text-color="white"
               >{{ p }}</v-chip>
               <span v-if="item.platforms.length===0" class="caption grey--text">-</span>
@@ -195,48 +187,11 @@
           </template>
 
           <template v-slot:item.actions="{ item }">
+            <v-btn icon small @click="openCustomerInfoDialog(item)"><v-icon small>mdi-account-details</v-icon></v-btn>
             <v-btn icon small @click="openCustomerDialog(item)"><v-icon small>mdi-account-edit</v-icon></v-btn>
             <v-btn icon small @click="openOrderDialog(null, item)"><v-icon small>mdi-cart-plus</v-icon></v-btn>
-            <v-btn icon small @click="removeCustomer(item)"><v-icon small>mdi-delete</v-icon></v-btn>
           </template>
 
-          <!-- GENİŞLETİLEN SATIR -->
-          <template v-slot:expanded-item="{ headers, item }">
-            <td :colspan="headers.length" class="pa-0">
-              <v-divider />
-              <v-card flat class="pa-3">
-                <div class="d-flex align-center mb-2">
-                  <div class="subtitle-2 font-weight-bold">Siparişler — {{ item.fullName }}</div>
-                  <v-spacer/>
-                  <v-btn x-small :color="accent" dark @click="openOrderDialog(null, item)">
-                    <v-icon left small>mdi-plus</v-icon> Yeni Sipariş
-                  </v-btn>
-                </div>
-
-                <v-data-table
-                    :headers="orderHeaders"
-                    :items="item.orders"
-                    dense hide-default-footer
-                >
-                  <template v-slot:item.tarih="{ item: o }">{{ fmtDateTime(o.date) }}</template>
-                  <template v-slot:item.tutar="{ item: o }">{{ tl(o.total) }}</template>
-                  <template v-slot:item.status="{ item: o }">
-                    <v-chip :color="statusColor(o.status)" text-color="white" x-small>{{ o.status }}</v-chip>
-                  </template>
-                  <template v-slot:item.teslim="{ item: o }">
-                    <span v-if="o.deliveredAt">{{ fmtDateTime(o.deliveredAt) }}</span>
-                    <span v-else class="grey--text">-</span>
-                  </template>
-                  <template v-slot:item.ops="{ item: o }">
-                    <v-btn icon x-small @click="openOrderDialog(o)"><v-icon small>mdi-pencil</v-icon></v-btn>
-                    <v-btn icon x-small @click="removeOrder(item, o)"><v-icon small>mdi-delete</v-icon></v-btn>
-                  </template>
-                </v-data-table>
-              </v-card>
-            </td>
-          </template>
-
-          <!-- ÖZET -->
           <template v-slot:footer.prepend>
             <div class="px-4 py-2">
               <v-chip small class="mr-2">Müşteri: {{ filteredCustomers.length }}</v-chip>
@@ -244,11 +199,9 @@
               <v-chip small color="deep-purple" text-color="white">Ciro (filtre): {{ tl(totalRevenue) }}</v-chip>
             </div>
           </template>
-        </v-data-table>
-      </v-card>
+        </v-data-table>      </v-card>
     </v-container>
 
-    <!-- MÜŞTERİ DİYALOĞU -->
     <v-dialog v-model="dialogs.customer" max-width="560px">
       <v-card>
         <v-card-title class="subtitle-1 font-weight-bold">
@@ -264,13 +217,11 @@
         </v-card-text>
         <v-card-actions class="px-4 pb-4">
           <v-btn text @click="dialogs.customer=false">Vazgeç</v-btn>
-          <v-spacer/>
-          <v-btn :color="accent" dark @click="saveCustomer" :disabled="!customerForm.fullName">Kaydet</v-btn>
+          <v-spacer/><v-btn :color="accent" dark @click="saveCustomer" :disabled="!customerForm.fullName">Kaydet</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
 
-    <!-- SİPARİŞ DİYALOĞU -->
     <v-dialog v-model="dialogs.order" max-width="720px">
       <v-card>
         <v-card-title class="subtitle-1 font-weight-bold">
@@ -283,8 +234,7 @@
                 <v-select
                     v-model="orderForm.customerId"
                     :items="customers.map(c=>({ text: c.fullName + ' (#'+c.id+')', value: c.id }))"
-                    label="Müşteri"
-                    dense outlined
+                    label="Müşteri" dense outlined
                     :disabled="!!orderFixedCustomer"
                     :rules="[v=>!!v || 'Zorunlu']" required
                 />
@@ -317,10 +267,12 @@
         </v-card-text>
         <v-card-actions class="px-4 pb-4">
           <v-btn text @click="dialogs.order=false">Vazgeç</v-btn>
-          <v-spacer/>
-          <v-btn :color="accent" dark :disabled="!orderForm.customerId" @click="saveOrder">Kaydet</v-btn>
+          <v-spacer/><v-btn :color="accent" dark :disabled="!orderForm.customerId" @click="saveOrder">Kaydet</v-btn>
         </v-card-actions>
       </v-card>
+    </v-dialog>
+
+    <v-dialog v-model="dialogs.customerInfo" max-width="600px">
     </v-dialog>
 
     <v-snackbar v-model="snack.show" :color="snack.color" timeout="2200">{{ snack.text }}</v-snackbar>
@@ -339,7 +291,7 @@ export default {
       drawer: this.$vuetify?.breakpoint?.lgAndUp || false,
       mini: this.$vuetify?.breakpoint?.lgAndUp || false,
       accent: localStorage.getItem('jp_accent') || '#5865F2',
-      accents: ['#5865F2','#0EA5E9','#22C55E','#F59E0B','#EF4444','#8B5CF6'],
+      accents: ["#5B6EF7","#6E7CFF","#7C8AFF","#4FA5FF","#36C2C2","#E5B25E","#8BA0B8"],
       drawerItems: [
         { title:'Ana Sayfa',    icon:'mdi-view-dashboard-outline', to:'home' },
         { title:'Satış',        icon:'mdi-cash-register',          to:'satis' },
@@ -351,13 +303,14 @@ export default {
         { title:'Stok',         icon:'mdi-archive-outline',        to:'stok' },
         { title:'Kargo',        icon:'mdi-truck-outline',          to:'kargo' },
       ],
-      quick: 'today',
       quickActions: [
-        { key:'M', icon:'mdi-account-plus', title:'Yeni Müşteri', subtitle:'Kayıt oluştur', click:()=>this.openCustomerDialog() },
-        { key:'S', icon:'mdi-cart-plus',    title:'Yeni Sipariş', subtitle:'Müşteriye ekle', click:()=>this.openOrderDialog() },
-        { key:'F', icon:'mdi-filter',       title:'Bugün',        subtitle:'Tarih filtresi', click:()=>this.setQuick('today') },
-        { key:'7', icon:'mdi-calendar-range', title:'Son 7 Gün',  subtitle:'Hızlı aralık', click:()=>this.setQuick('7d') },
+        { key:'Y', icon:'mdi-account-plus', title:'Yeni Müşteri', subtitle:'Hızlı ekle', click:()=>this.openCustomerDialog() },
+        { key:'S', icon:'mdi-cart-plus',    title:'Yeni Sipariş', subtitle:'Hızlı ekle', click:()=>this.openOrderDialog() },
+        { key:'T', icon:'mdi-clock-check-outline', title:'Bugün', subtitle:'Bugün siparişler', click:()=>this.setQuick('today') },
+        { key:'H', icon:'mdi-calendar-week',       title:'Haftalık', subtitle:'Son 7 gün siparişler', click:()=>this.setQuick('7d') },
       ],
+      quick: 'today',
+
 
       // veri
       customers: [],
@@ -388,7 +341,7 @@ export default {
       ],
 
       expanded: [],
-      dialogs: { customer: false, order: false },
+      dialogs: { customer: false, order: false, customerInfo: false },
       customerForm: { id: null, fullName: "", phone: "", email: "", addressShort: "" },
       orderForm: {
         id: null, customerId: null,
@@ -397,6 +350,12 @@ export default {
         deliveredAt: ""
       },
       orderFixedCustomer: null,
+
+      // müşteri içi not/etiket taslakları
+      noteDrafts: {},
+      tagDrafts: {},
+      customerInfoData: null,
+
 
       snack: { show:false, color:"green", text:"" },
       platformMaster: ["Mağaza","Web","Instagram","WhatsApp","Trendyol","Hepsiburada","N11"],
@@ -421,11 +380,12 @@ export default {
           phone: c.phone || '',
           email: c.email || '',
           addressShort: c.addressShort || [c.city, c.district].filter(Boolean).join(', '),
+          tags: Array.isArray(c.tags) ? c.tags : [],
+          notes: Array.isArray(c.notes) ? c.notes : [],
           orders: normalizedOrders
         };
       });
 
-      // başlangıç hızlı aralığı
       this.setQuick('today');
     }catch(e){
       console.error('musteriler yüklenemedi:', e);
@@ -475,12 +435,8 @@ export default {
         return matchQ && matchP && matchS && matchDate;
       });
     },
-    totalOrders() {
-      return this.filteredCustomers.reduce((t,c)=> t + c.orders.length, 0);
-    },
-    totalRevenue() {
-      return this.filteredCustomers.reduce((t,c)=> t + c.orders.reduce((x,o)=>x+o.total,0), 0);
-    }
+    totalOrders() { return this.filteredCustomers.reduce((t,c)=> t + c.orders.length, 0); },
+    totalRevenue() { return this.filteredCustomers.reduce((t,c)=> t + c.orders.reduce((x,o)=>x+o.total,0), 0); }
   },
 
   methods: {
@@ -497,12 +453,10 @@ export default {
         this.filters.startDate = today; this.filters.endDate = today;
       }else if(mode==='7d'){
         const d2 = new Date(d); d2.setDate(d2.getDate() - 6);
-        this.filters.startDate = `${d2.getFullYear()}-${p(d2.getMonth()+1)}-${p(d2.getDate())}`;
-        this.filters.endDate = today;
+        this.filters.startDate = `${d2.getFullYear()}-${p(d2.getMonth()+1)}-${p(d2.getDate())}`; this.filters.endDate = today;
       }else if(mode==='month'){
         const d2 = new Date(d.getFullYear(), d.getMonth(), 1);
-        this.filters.startDate = `${d2.getFullYear()}-${p(d2.getMonth()+1)}-${p(d2.getDate())}`;
-        this.filters.endDate = today;
+        this.filters.startDate = `${d2.getFullYear()}-${p(d2.getMonth()+1)}-${p(d2.getDate())}`; this.filters.endDate = today;
       }
     },
     resetFilters(){ this.filters = { q:"", platform:null, status:null, startDate:"", endDate:"" } },
@@ -514,20 +468,16 @@ export default {
 
       return (orders||[]).map(o => {
         const items = (o.lines||[]).reduce((t,l)=> t + Number(l.qty||0), 0);
-
         let totalGross = 0;
         (o.lines||[]).forEach(l => {
           const prod = findProduct(l.productId);
           const calc = priceCalc(prod);
           let unitGross = (l.manualPrice != null && !isNaN(l.manualPrice))
-              ? Number(l.manualPrice)
-              : calc.priceGross;
+              ? Number(l.manualPrice) : calc.priceGross;
 
-          if(l.discountType === 'pct'){
-            unitGross = Math.max(0, unitGross * (1 - Number(l.discountValue||0)/100));
-          }else if(l.discountType === 'tl'){
-            unitGross = Math.max(0, unitGross - Number(l.discountValue||0));
-          }
+          if(l.discountType === 'pct')      unitGross = Math.max(0, unitGross * (1 - Number(l.discountValue||0)/100));
+          else if(l.discountType === 'tl')  unitGross = Math.max(0, unitGross - Number(l.discountValue||0));
+
           totalGross += unitGross * (Number(l.qty)||0);
         });
 
@@ -553,8 +503,16 @@ export default {
     fmtDateTime(d){ if(!d) return "-"; const dt=(d instanceof Date)?d:new Date(d); const p=v=>String(v).padStart(2,"0"); return `${dt.getFullYear()}-${p(dt.getMonth()+1)}-${p(dt.getDate())} ${p(dt.getHours())}:${p(dt.getMinutes())}`; },
     parseDate(s, endOfDay=false){ if(!s) return null; const d=new Date(s+"T00:00:00"); if(endOfDay) d.setHours(23,59,59,999); return isNaN(d)?null:d; },
     statusColor(st){ return st==="Teslim Edildi"?"teal": st==="Dağıtımda"?"indigo": st==="Kargoya Verildi"?"blue": st==="Hazırlanıyor"?"orange":"grey"; },
+    statusIcon(st){ return st==="Teslim Edildi"?'mdi-check-circle': st==="Dağıtımda"?'mdi-truck-delivery': st==="Kargoya Verildi"?'mdi-package-variant-closed':'mdi-progress-clock'; },
     newId(){ return Date.now() + Math.floor(Math.random()*1000); },
     toast(text,color="green"){ this.snack={show:true,color,text}; },
+    initials(n){ return (n||'').split(' ').map(s=>s[0]).join('').slice(0,2).toUpperCase() || 'M'; },
+
+    // etiket & not
+    addTag(c){ const t=(this.tagDrafts[c.id]||'').trim(); if(!t) return; c.tags=c.tags||[]; if(!c.tags.includes(t)) c.tags.push(t); this.tagDrafts[c.id]=''; },
+    removeTag(c,t){ c.tags = (c.tags||[]).filter(x=>x!==t); },
+    addNote(c){ const txt=(this.noteDrafts[c.id]||'').trim(); if(!txt) return; c.notes=c.notes||[]; c.notes.push({ id:this.newId(), text:txt, at:new Date().toISOString() }); this.noteDrafts[c.id]=''; this.toast('Not eklendi'); },
+    showAllNotes(c){ alert((c.notes||[]).map(n=>`${this.fmtDateTime(n.at)} — ${n.text}`).join('\n')); },
 
     // müşteri CRUD (runtime)
     openCustomerDialog(c=null){
@@ -569,7 +527,7 @@ export default {
         if(i>-1) this.$set(this.customers, i, { ...this.customers[i], ...f });
         this.toast("Müşteri güncellendi");
       }else{
-        this.customers.push({ ...f, id: this.newId(), orders: [] });
+        this.customers.push({ ...f, id: this.newId(), orders: [], notes: [], tags: [] });
         this.toast("Müşteri eklendi");
       }
       this.dialogs.customer = false;
@@ -670,6 +628,82 @@ export default {
       return `${dt.getFullYear()}-${p(dt.getMonth()+1)}-${p(dt.getDate())}T${p(dt.getHours())}:${p(dt.getMinutes())}`;
     },
     fromLocalInput(s){ if(!s) return null; const d=new Date(s); return isNaN(d)?null:d.toISOString(); },
+
+    // kpi
+    kpi(customer) {
+      const count = customer.orders.length;
+      const revenue = customer.orders.reduce((sum, o) => sum + o.total, 0);
+      const deliveredCount = customer.orders.filter(o => o.status === 'Teslim Edildi').length;
+
+      return {
+        count,
+        revenue,
+        avg: count > 0 ? revenue / count : 0,
+        deliveredRate: count > 0 ? deliveredCount / count : 0
+      };
+    },
+    waLink(phone){
+      if(!phone) return null;
+      const digits = String(phone).replace(/\D/g,'');
+      return `https://wa.me/${digits}`;
+    },
+    async copy(text){
+      if(!text) return;
+      try{
+        await navigator.clipboard.writeText(text);
+        this.toast('Panoya kopyalandı');
+      }catch(e){
+        this.toast('Kopyalanamadı','red');
+      }
+    },
+    openCustomerInfoDialog(c){
+      this.customerInfoData = c;
+      this.dialogs.customerInfo = true;
+    },
+    getLogs(customer) {
+      const logs = [];
+
+      (customer.orders || []).forEach(o => {
+        logs.push({
+          date: new Date(o.date),
+          title: `Sipariş Oluşturuldu - #${o.id}`,
+          subtitle: `${o.total} TL tutarında sipariş. Platform: ${o.platform}`,
+          color: 'blue',
+          icon: 'mdi-cart-plus',
+        });
+        if (o.deliveredAt) {
+          logs.push({
+            date: new Date(o.deliveredAt),
+            title: `Sipariş Teslim Edildi - #${o.id}`,
+            subtitle: `${o.trackingNo ? 'Kargo No: ' + o.trackingNo : ''}`,
+            color: 'teal',
+            icon: 'mdi-truck-check',
+          });
+        }
+      });
+
+      (customer.notes || []).forEach(n => {
+        logs.push({
+          date: new Date(n.at),
+          title: 'Yeni Not Eklendi',
+          subtitle: n.text,
+          color: 'purple',
+          icon: 'mdi-note',
+        });
+      });
+
+      (customer.tags || []).forEach(t => {
+        logs.push({
+          date: new Date(),
+          title: 'Yeni Etiket Eklendi',
+          subtitle: `Etiket: ${t}`,
+          color: 'orange',
+          icon: 'mdi-tag',
+        });
+      });
+
+      return logs.sort((a, b) => b.date - a.date);
+    },
   }
 };
 </script>
@@ -696,6 +730,18 @@ export default {
 .hero-title{ margin:0; font-weight:800; letter-spacing:.2px; }
 .hero-sub{ opacity:.8 }
 
+/* Quick actions */
+.qa{
+  display:flex; align-items:center;
+  padding:10px 14px; margin-right:12px;
+  border-radius:14px; border:1px solid transparent;
+  background:rgba(255,255,255,.7);
+  backdrop-filter:blur(6px);
+  transition:transform .2s ease, box-shadow .2s ease;
+}
+.theme--dark .qa{ background:rgba(30,30,30,.7) }
+.qa:hover{ transform:translateY(-3px); box-shadow:0 10px 20px rgba(0,0,0,.08) }
+
 /* Filters */
 .filters-sheet{
   border-radius:16px; padding:14px 16px;
@@ -703,23 +749,9 @@ export default {
   background:rgba(255,255,255,.75);
   backdrop-filter:blur(8px) saturate(120%);
 }
-.theme--dark .filters-sheet{
-  border-color:rgba(255,255,255,.06);
-  background:rgba(24,24,24,.7);
-}
+.theme--dark .filters-sheet{ border-color:rgba(255,255,255,.06); background:rgba(24,24,24,.7); }
 .glass-btn{ background:rgba(255,255,255,.6); border:1px solid rgba(0,0,0,.06) }
 .theme--dark .glass-btn{ background:rgba(24,24,24,.6); border-color:rgba(255,255,255,.08) }
-
-/* Quick actions */
-.qa{
-  display:flex; align-items:center;
-  padding:10px 14px; margin-right:12px;
-  border-radius:14px; border:1px solid transparent;
-  background:rgba(255,255,255,.7); backdrop-filter:blur(6px);
-  transition:transform .2s ease, box-shadow .2s ease;
-}
-.theme--dark .qa{ background:rgba(30,30,30,.7) }
-.qa:hover{ transform:translateY(-3px); box-shadow:0 10px 20px rgba(0,0,0,.08) }
 
 /* Table */
 .table-card{ border-radius:16px; overflow:hidden }
@@ -728,9 +760,41 @@ export default {
 .elevated-datatable ::v-deep tbody tr:hover{ background:rgba(0,0,0,.02) }
 .theme--dark .elevated-datatable ::v-deep tbody tr:hover{ background:rgba(255,255,255,.04) }
 
+/* Expanded area */
+.cust-expansion{
+  background: linear-gradient(180deg, rgba(0,0,0,.02), transparent);
+  padding:14px 14px 4px; border-top:1px solid rgba(0,0,0,.06);
+}
+.cust-card{
+  border:1px solid rgba(0,0,0,.06); border-radius:14px;
+  padding:12px; background:rgba(255,255,255,.7)
+}
+.theme--dark .cust-card{ border-color:rgba(255,255,255,.08); background:rgba(28,28,28,.6) }
+.cust-card-header{ display:flex; align-items:center; }
+.min-w-0{ min-width:0 }
+.truncate-2{ display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden }
+.tag-input{ max-width:120px }
+.notes-list .note{ border-left:3px solid var(--accent); padding-left:8px; margin-bottom:8px }
+
+/* Metrics */
+.metric{ border:1px solid rgba(0,0,0,.06); border-radius:14px; padding:10px 12px; background:rgba(255,255,255,.6) }
+.theme--dark .metric{ border-color:rgba(255,255,255,.08); background:rgba(28,28,28,.6) }
+.metric-label{ font-size:.72rem; opacity:.7 }
+.metric-value{ font-size:1.05rem; font-weight:700 }
+
+/* Sparkline & blocks */
+.sparkline-card, .order-card, .timeline-card{
+  border:1px solid rgba(0,0,0,.06); border-radius:14px; padding:10px 12px; margin-top:8px;
+  background:rgba(255,255,255,.6)
+}
+.theme--dark .sparkline-card, .theme--dark .order-card, .theme--dark .timeline-card{
+  border-color:rgba(255,255,255,.08); background:rgba(28,28,28,.6)
+}
+
 /* Misc */
 @keyframes float{ 0%{transform:translate3d(0,0,0) rotate(0deg)} 50%{transform:translate3d(2%,-2%,0) rotate(1deg)} 100%{transform:translate3d(0,0,0) rotate(0deg)} }
 .v-data-table .v-data-table__wrapper{ font-size:.92rem; }
+.font-weight-600{ font-weight:600 }
 </style>
 
 <style>

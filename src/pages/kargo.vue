@@ -103,7 +103,7 @@
                 outlined
                 clearable
                 hide-details
-                label="Ara (sipariş, müşteri, tel, adres, takip no)"
+                label="Ara (sipariş, müşteri, tel, takip no)"
                 prepend-inner-icon="mdi-magnify"
                 @keyup.enter="onQuickEnter"
             />
@@ -158,8 +158,6 @@
               :items="filtered"
               item-key="id"
               show-select
-              :expanded.sync="expanded"
-              show-expand
               dense
               fixed-header
               height="620"
@@ -169,54 +167,37 @@
           >
             <template v-slot:item.shipment="{ item }">
               <div class="font-weight-medium">#{{ item.orderId }} — {{ item.customer }}</div>
-              <div class="caption grey--text">{{ shortAddress(item) }}</div>
-            </template>
-            <template v-slot:item.platform="{ item }">
-              <v-chip x-small :color="accent" text-color="white">{{ item.platform }}</v-chip>
             </template>
             <template v-slot:item.carrier="{ item }">
               <div>{{ item.carrier }}<span v-if="item.service" class="grey--text"> ({{ item.service }})</span></div>
-            </template>
-            <template v-slot:item.trackingNo="{ item }">
-              <v-btn text small class="px-0 link" @click="openTracking(item)">{{ item.trackingNo }}</v-btn>
-            </template>
-            <template v-slot:item.status="{ item }">
-              <v-chip small :color="statusColor(item.status)" text-color="white">{{ item.status }}</v-chip>
-            </template>
-            <template v-slot:item.lastEvent="{ item }">
-              <div class="text-truncate" style="max-width:220px">
-                <span v-if="item.events && item.events[0]">{{ fmtDateTime(item.events[0].time) }} — {{ item.events[0].desc }}</span>
-                <span v-else class="grey--text">-</span>
-              </div>
-            </template>
-            <template v-slot:item.eta="{ item }">{{ item.eta ? fmtDate(item.eta) : '-' }}</template>
-            <template v-slot:item.cod="{ item }">
-              <v-chip x-small :color="item.cod ? 'deep-purple' : 'grey'" text-color="white">
-                {{ item.cod ? tl(item.codAmount || 0) : 'Yok' }}
-              </v-chip>
-            </template>
-            <template v-slot:item.ops="{ item }">
-              <v-btn icon small @click="openShipmentDialog(item)"><v-icon small>mdi-pencil</v-icon></v-btn>
-              <v-btn icon small @click="openDetailDrawer(item)"><v-icon small>mdi-eye</v-icon></v-btn>
-              <v-btn icon small @click="printLabel(item)"><v-icon small>mdi-label</v-icon></v-btn>
-              <v-btn icon small @click="removeShipment(item)"><v-icon small>mdi-delete</v-icon></v-btn>
+              <div class="caption grey--text link" @click="openTracking(item)">{{ item.trackingNo }}</div>
             </template>
 
-            <template v-slot:expanded-item="{ headers, item }">
-              <td :colspan="headers.length" class="pa-0">
-                <v-divider />
-                <v-card flat class="pa-3">
-                  <div class="d-flex align-center">
-                    <div class="subtitle-2 font-weight-bold">Hızlı Olay — #{{ item.orderId }}</div>
-                    <v-spacer />
-                    <v-btn x-small class="mr-2 glass-btn" @click="pushQuickEvent(item, 'Kargoya Verildi')">Kargoya Verildi</v-btn>
-                    <v-btn x-small class="mr-2 glass-btn" @click="pushQuickEvent(item, 'Dağıtımda')">Dağıtımda</v-btn>
-                    <v-btn x-small color="success" dark class="mr-2" @click="pushQuickEvent(item, 'Teslim Edildi')">Teslim</v-btn>
-                    <v-btn x-small color="orange" dark class="mr-2" @click="pushQuickEvent(item, 'İade Sürecinde')">İade</v-btn>
-                    <v-btn x-small outlined @click="openDetailDrawer(item)">Tüm Detay</v-btn>
-                  </div>
-                </v-card>
-              </td>
+            <template v-slot:item.status="{ item }">
+              <v-menu offset-y>
+                <template v-slot:activator="{ on, attrs }">
+                  <v-chip
+                      small
+                      :color="statusColor(item.status)"
+                      text-color="white"
+                      v-bind="attrs"
+                      v-on="on"
+                      class="status-chip"
+                  >
+                    {{ item.status }}
+                  </v-chip>
+                </template>
+                <v-list dense>
+                  <v-list-item v-for="(st, i) in statusOptions" :key="i" @click="pushQuickEvent(item, st)">
+                    <v-list-item-title>{{ st }}</v-list-item-title>
+                  </v-list-item>
+                </v-list>
+              </v-menu>
+            </template>
+
+            <template v-slot:item.ops="{ item }">
+              <v-btn icon small @click="openShipmentDetail(item)"><v-icon small>mdi-eye</v-icon></v-btn>
+              <v-btn icon small @click="printLabel(item)"><v-icon small>mdi-label</v-icon></v-btn>
             </template>
 
             <template v-slot:footer.prepend>
@@ -249,80 +230,68 @@
       </v-container>
     </div>
 
-    <v-navigation-drawer v-model="drawer.open" right temporary app width="480" class="elevation-12">
-      <v-toolbar flat>
-        <v-toolbar-title class="subtitle-1 font-weight-bold">Kargo Detayı</v-toolbar-title>
-        <v-spacer /><v-btn icon @click="drawer.open = false"><v-icon>mdi-close</v-icon></v-btn>
-      </v-toolbar>
-      <v-divider />
-      <v-container class="py-4" v-if="drawer.item">
-        <div class="subtitle-1 font-weight-bold mb-2">#{{ drawer.item.orderId }} — {{ drawer.item.customer }}</div>
-        <div class="mb-1"><v-chip x-small :color="statusColor(drawer.item.status)" text-color="white">{{ drawer.item.status }}</v-chip></div>
-        <div class="mb-2">
-          <div class="caption grey--text">Adres</div>
-          <div>{{ drawer.item.address }}, {{ drawer.item.city }} {{ drawer.item.district }}</div>
-          <div class="caption grey--text mt-1">Telefon / E-posta</div>
-          <div>{{ drawer.item.phone }} — {{ drawer.item.email || '-' }}</div>
-        </div>
-
-        <v-simple-table dense class="mb-2">
-          <tbody>
-          <tr><td>Kargo</td><td class="text-right">{{ drawer.item.carrier }} <span v-if="drawer.item.service">({{ drawer.item.service }})</span></td></tr>
-          <tr><td>Takip No</td><td class="text-right">{{ drawer.item.trackingNo }}</td></tr>
-          <tr><td>Oluşturma</td><td class="text-right">{{ fmtDateTime(drawer.item.createdAt) }}</td></tr>
-          <tr><td>Eta</td><td class="text-right">{{ drawer.item.eta ? fmtDate(drawer.item.eta) : '-' }}</td></tr>
-          <tr><td>Kapıda Ödeme</td><td class="text-right">{{ drawer.item.cod ? tl(drawer.item.codAmount || 0) : 'Yok' }}</td></tr>
-          <tr><td>Kargo Ücreti</td><td class="text-right">{{ tl(drawer.item.shippingFee || 0) }}</td></tr>
-          <tr><td>Ağırlık</td><td class="text-right">{{ (drawer.item.weight || 0).toFixed(2) }} kg</td></tr>
-          <tr><td>Platform</td><td class="text-right">{{ drawer.item.platform }}</td></tr>
-          </tbody>
-        </v-simple-table>
-
-        <div class="subtitle-2 font-weight-bold mb-1">Zaman Çizelgesi</div>
-        <v-timeline dense>
-          <v-timeline-item v-for="(e, i) in drawer.item.events" :key="i" :color="eventColor(e.code)" small>
-            <div class="font-weight-medium">{{ e.desc }}</div>
-            <div class="caption grey--text">{{ fmtDateTime(e.time) }} • {{ e.location || '-' }}</div>
-          </v-timeline-item>
-          <div v-if="!drawer.item.events || drawer.item.events.length === 0" class="grey--text caption">Olay yok.</div>
-        </v-timeline>
-
-        <v-card outlined class="mt-2">
-          <v-card-title class="subtitle-2 font-weight-bold">Olay Ekle</v-card-title>
-          <v-card-text>
-            <v-row dense>
-              <v-col cols="12" md="6"><v-select v-model="eventForm.code" :items="eventCodeOptions" dense outlined label="Kod" /></v-col>
-              <v-col cols="12" md="6"><v-text-field v-model="eventForm.desc" dense outlined label="Açıklama" /></v-col>
-            </v-row>
-            <v-row dense>
-              <v-col cols="6" md="6"><v-text-field v-model="eventForm.location" dense outlined label="Lokasyon" /></v-col>
-              <v-col cols="6" md="6"><v-text-field v-model="eventForm.time" type="datetime-local" dense outlined label="Zaman" /></v-col>
-            </v-row>
-            <div class="caption grey--text">* Olay eklemek durumu otomatik günceller.</div>
-          </v-card-text>
-          <v-card-actions class="px-4 pb-4">
-            <v-btn text @click="clearEventForm">Temizle</v-btn>
-            <v-spacer /><v-btn :color="accent" dark @click="addEvent">Ekle</v-btn>
-          </v-card-actions>
-        </v-card>
-      </v-container>
-    </v-navigation-drawer>
-
-    <div id="labelPrint" v-if="label.item" class="pa-4">
-      <div class="label-box">
-        <div class="d-flex justify-space-between">
-          <div class="subtitle-1 font-weight-bold">{{ label.item.carrier }}</div>
-          <div>#{{ label.item.orderId }}</div>
-        </div>
-        <div class="mt-2"><strong>{{ label.item.customer }}</strong></div>
-        <div>{{ label.item.address }}</div>
-        <div>{{ label.item.city }} / {{ label.item.district }}</div>
-        <div class="mt-2">Tel: {{ label.item.phone }}</div>
-        <div class="mt-1">Takip: {{ label.item.trackingNo }}</div>
-        <div class="mt-1">Ağırlık: {{ (label.item.weight || 0).toFixed(2) }} kg</div>
-        <div class="mt-1">COD: {{ label.item.cod ? tl(label.item.codAmount || 0) : 'YOK' }}</div>
-      </div>
-    </div>
+    <v-dialog v-model="dialogs.detail" max-width="800px">
+      <v-card v-if="detailItem">
+        <v-toolbar flat>
+          <v-toolbar-title class="subtitle-1 font-weight-bold">Kargo Detayı</v-toolbar-title>
+          <v-spacer /><v-btn icon @click="dialogs.detail = false"><v-icon>mdi-close</v-icon></v-btn>
+        </v-toolbar>
+        <v-divider />
+        <v-card-text class="py-4">
+          <v-row dense>
+            <v-col cols="12" md="6">
+              <div class="subtitle-2 font-weight-bold mb-2">Genel Bilgiler</div>
+              <v-list dense>
+                <v-list-item>
+                  <v-list-item-content><v-list-item-title>Sipariş No</v-list-item-title></v-list-item-content>
+                  <v-list-item-action>{{ detailItem.orderId }}</v-list-item-action>
+                </v-list-item>
+                <v-list-item>
+                  <v-list-item-content><v-list-item-title>Müşteri</v-list-item-title></v-list-item-content>
+                  <v-list-item-action>{{ detailItem.customer }}</v-list-item-action>
+                </v-list-item>
+                <v-list-item>
+                  <v-list-item-content><v-list-item-title>Durum</v-list-item-title></v-list-item-content>
+                  <v-list-item-action><v-chip small :color="statusColor(detailItem.status)" text-color="white">{{ detailItem.status }}</v-chip></v-list-item-action>
+                </v-list-item>
+                <v-list-item>
+                  <v-list-item-content><v-list-item-title>Takip No</v-list-item-title></v-list-item-content>
+                  <v-list-item-action>{{ detailItem.trackingNo }}</v-list-item-action>
+                </v-list-item>
+                <v-list-item>
+                  <v-list-item-content><v-list-item-title>Kargo Firması</v-list-item-title></v-list-item-content>
+                  <v-list-item-action>{{ detailItem.carrier }}</v-list-item-action>
+                </v-list-item>
+                <v-list-item>
+                  <v-list-item-content><v-list-item-title>Kapıda Ödeme</v-list-item-title></v-list-item-content>
+                  <v-list-item-action>{{ detailItem.cod ? tl(detailItem.codAmount || 0) : 'Yok' }}</v-list-item-action>
+                </v-list-item>
+                <v-list-item>
+                  <v-list-item-content><v-list-item-title>Adres</v-list-item-title></v-list-item-content>
+                  <v-list-item-action>{{ shortAddress(detailItem) }}</v-list-item-action>
+                </v-list-item>
+              </v-list>
+            </v-col>
+            <v-col cols="12" md="6">
+              <div class="subtitle-2 font-weight-bold mb-2">Zaman Çizelgesi</div>
+              <v-timeline dense>
+                <v-timeline-item v-for="(e, i) in detailItem.events" :key="i" :color="eventColor(e.code)" small>
+                  <div class="font-weight-medium">{{ e.desc }}</div>
+                  <div class="caption grey--text">{{ fmtDateTime(e.time) }} • {{ e.location || '-' }}</div>
+                </v-timeline-item>
+                <div v-if="!detailItem.events || detailItem.events.length === 0" class="grey--text caption text-center">Olay yok.</div>
+              </v-timeline>
+            </v-col>
+          </v-row>
+        </v-card-text>
+        <v-card-actions class="px-4 pb-4">
+          <v-btn text @click="openShipmentDialog(detailItem)"><v-icon left>mdi-pencil</v-icon> Düzenle</v-btn>
+          <v-btn text color="red" @click="removeShipment(detailItem)"><v-icon left>mdi-delete</v-icon> Sil</v-btn>
+          <v-spacer />
+          <v-btn :color="accent" dark @click="dialogs.detail = false">Kapat</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
 
     <v-dialog v-model="dialogs.shipment" max-width="720px">
       <v-card>
@@ -399,7 +368,7 @@ export default {
       mainDrawer: true,
       mini: false,
       accent: localStorage.getItem('jp_accent') || '#5865F2',
-      accents: ['#5865F2', '#10B981', '#F59E0B', '#F43F5E', '#06B6D4', '#8B5CF6'],
+      accents: ["#5B6EF7","#6E7CFF","#7C8AFF","#4FA5FF","#36C2C2","#E5B25E","#8BA0B8"],
       drawerItems: [
         { title:'Ana Sayfa',    icon:'mdi-view-dashboard-outline', to:'home' },
         { title:'Satış',        icon:'mdi-cash-register',          to:'satis' },
@@ -418,23 +387,15 @@ export default {
       eventCodeOptions: ['INFO', 'SHIPPED', 'OUT', 'DELIVER', 'HOLD', 'HUB_IN', 'CUSTOM'],
       shipments: [],
       headers: [
-        { text: 'Kargo', value: 'carrier', width: 140 },
-        { text: 'Gönderi', value: 'shipment', width: 320 },
-        { text: 'Platform', value: 'platform', width: 110 },
-        { text: 'Adet', value: 'items', align: 'end', width: 80 },
-        { text: 'Ağırlık', value: 'weight', align: 'end', width: 90 },
-        { text: 'Takip No', value: 'trackingNo', width: 160 },
-        { text: 'Durum', value: 'status', width: 140 },
-        { text: 'Son Olay', value: 'lastEvent', width: 260 },
-        { text: 'ETA', value: 'eta', width: 110 },
-        { text: 'K.Odeme', value: 'cod', width: 120 },
-        { text: '', value: 'ops', sortable: false, align: 'end', width: 150 }
+        { text: 'Sipariş & Müşteri', value: 'shipment' },
+        { text: 'Takip No', value: 'carrier' },
+        { text: 'Durum', value: 'status' },
+        { text: 'İşlemler', value: 'ops', sortable: false, align: 'end' }
       ],
       selected: [],
-      expanded: [],
-      drawer: { open: false, item: null },
+      dialogs: { shipment: false, bulk: false, detail: false },
+      detailItem: null,
       eventForm: { code: 'INFO', desc: '', location: '', time: '' },
-      dialogs: { shipment: false, bulk: false },
       form: { id: null, orderId: '', platform: '', customer: '', phone: '', email: '', address: '', city: '', district: '', carrier: 'Yurtiçi', service: 'Standart', trackingNo: '', status: 'Hazırlanıyor', items: 1, weight: 0, shippingFee: 0, cod: false, codAmount: 0, createdAt: '', shippedAt: '', eta: '', note: '' },
       bulkStatus: null,
       label: { item: null },
@@ -535,12 +496,12 @@ export default {
     isIssue(st) { return ['İade Sürecinde', 'İade Alındı', 'Adres Yetersiz', 'Hasarlı'].includes(st) },
     eventColor(code) { return code === 'DELIVER' ? 'green' : code === 'OUT' ? 'blue' : code === 'SHIPPED' ? 'teal' : code === 'HOLD' ? 'orange' : code === 'HUB_IN' ? 'indigo' : 'grey' },
     countBy(st) { return this.filtered.filter(x => x.status === st).length },
-    onQuickEnter() { const q = (this.filters.q || '').trim(); if (!q) return; const s = this.shipments.find(x => String(x.trackingNo).toLowerCase() === q.toLowerCase() || String(x.orderId) === q); if (s) { this.openDetailDrawer(s) } },
+    onQuickEnter() { const q = (this.filters.q || '').trim(); if (!q) return; const s = this.shipments.find(x => String(x.trackingNo).toLowerCase() === q.toLowerCase() || String(x.orderId) === q); if (s) { this.openShipmentDetail(s) } },
     openTracking(item) { const url = `https://www.google.com/search?q=${encodeURIComponent(item.carrier + ' kargo takip ' + item.trackingNo)}`; window.open(url, '_blank') },
-    openDetailDrawer(item) { this.drawer.item = item; this.drawer.open = true; this.clearEventForm() },
+    openShipmentDetail(item) { this.detailItem = item; this.dialogs.detail = true; },
     clearEventForm() { const d = new Date(); const p = v => String(v).padStart(2, '0'); this.eventForm = { code: 'INFO', desc: '', location: '', time: `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}` } },
     addEvent() {
-      const it = this.drawer.item; if (!it) return;
+      const it = this.detailItem; if (!it) return;
       const { code, desc, location, time } = this.eventForm;
       if (!desc) { this.toast('Açıklama gir', 'red'); return }
       const ev = { code, desc, location, time: new Date(time) };
@@ -565,6 +526,7 @@ export default {
       this.toast('Durum güncellendi')
     },
     openShipmentDialog(s = null) {
+      this.dialogs.detail = false; // Detay penceresini kapat
       this.dialogs.shipment = true;
       this.form = s
           ? { ...s, createdAt: this.toLocalInput(s.createdAt), shippedAt: this.toLocalInput(s.shippedAt), eta: this.toInputDate(s.eta) }
@@ -572,7 +534,7 @@ export default {
     },
     autofillTracking() { const prefix = (this.form.carrier || 'KG').slice(0, 2).toUpperCase(); this.form.trackingNo = `${prefix}${Math.floor(100000000 + Math.random() * 900000000)}TR` },
     saveShipment() { this.dialogs.shipment = false; this.toast('Kaydedildi') },
-    removeShipment(s) { if (confirm(`#${s.orderId} kargoyu silmek istiyor musun?`)) { const i = this.shipments.findIndex(x => x.id === s.id); if (i > -1) this.shipments.splice(i, 1); this.toast('Kargo silindi') } },
+    removeShipment(s) { if (confirm(`#${s.orderId} kargoyu silmek istiyor musun?`)) { const i = this.shipments.findIndex(x => x.id === s.id); if (i > -1) this.shipments.splice(i, 1); this.toast('Kargo silindi'); this.dialogs.detail = false; } },
     openBulkStatusDialog() { this.dialogs.bulk = true; this.bulkStatus = null },
     applyBulkStatus() { if (!this.bulkStatus) return; this.selected.forEach(s => this.pushQuickEvent(s, this.bulkStatus)); this.dialogs.bulk = false; this.toast('Toplu durum güncellendi') },
     yazdirManifest() { window.print() },
@@ -615,7 +577,7 @@ export default {
 .kpi{ border-radius:14px; position:relative; overflow:hidden }
 .kpi-glow{ content:''; position:absolute; inset:0 0 auto 0; height:6px; background:linear-gradient(90deg, var(--accent), transparent); opacity:.9 }
 .table-card{ border-radius:16px; overflow:hidden }
-.link{ color:var(--accent) !important }
+.link{ color:var(--accent) !important; text-decoration: underline; cursor: pointer; }
 .elevated-datatable ::v-deep thead th{ background:linear-gradient(180deg,#fafafa,#f4f6f8) }
 .theme--dark .elevated-datatable ::v-deep thead th{ background:linear-gradient(180deg,#1d1d1d,#181818) }
 .elevated-datatable ::v-deep tbody tr:hover{ background:rgba(0,0,0,.02) }

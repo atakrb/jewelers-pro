@@ -100,10 +100,6 @@
               <v-text-field v-model="filters.q" dense outlined clearable label="Ara (ad, barkod, SKU)" prepend-inner-icon="mdi-magnify"/>
             </v-col>
             <v-col cols="6" md="2">
-              <v-select v-model="filters.categoryId" :items="categories.map(c=>({text:c.name,value:c.id}))"
-                        dense outlined clearable label="Kategori"/>
-            </v-col>
-            <v-col cols="6" md="2">
               <v-select v-model="filters.supplierId" :items="suppliers.map(s=>({text:s.name,value:s.id}))"
                         dense outlined clearable label="Toptancı"/>
             </v-col>
@@ -228,7 +224,7 @@
 
             <v-row dense>
               <v-col cols="6" md="2"><v-select v-model="productForm.type" :items="typeOptions" dense outlined label="Tür"/></v-col>
-              <v-col cols="6" md="2"><v-text-field v-model="productForm.ayar" dense outlined label="Ayar"/></v-col>
+              <v-col cols="6" md="2"><v-text-field v-model="productForm.ayar" dense outlined label="925 ayar"/></v-col>
               <v-col cols="6" md="2"><v-text-field v-model.number="productForm.gram" type="number" min="0" step="0.01" dense outlined label="Gram (opsiyonel)"/></v-col>
               <v-col cols="6" md="2"><v-text-field v-model.number="productForm.stock" type="number" min="0" dense outlined label="Stok"/></v-col>
               <v-col cols="6" md="2"><v-text-field v-model="productForm.sku" dense outlined label="SKU / Kod"/></v-col>
@@ -350,7 +346,7 @@ export default {
       drawer: this.$vuetify?.breakpoint?.lgAndUp || false,
       mini: this.$vuetify?.breakpoint?.lgAndUp || false,
       accent: localStorage.getItem('jp_accent') || '#5865F2',
-      accents: ['#5865F2','#0EA5E9','#22C55E','#F59E0B','#EF4444','#8B5CF6'],
+      accents: ["#5B6EF7","#6E7CFF","#7C8AFF","#4FA5FF","#36C2C2","#E5B25E","#8BA0B8"],
       drawerItems: [
         { title:'Ana Sayfa',    icon:'mdi-view-dashboard-outline', to:'home' },
         { title:'Satış',        icon:'mdi-cash-register',          to:'satis' },
@@ -376,21 +372,19 @@ export default {
       products: [],
 
       headers: [
-        { text: "ID", value: "id", width: 80 },
-        { text: "Ürün", value: "name" },
-        { text: "Kategori", value: "category", width: 140 },
+        { text: "ID", value: "id", width: 100 },
+        { text: "Ürün", value: "name", width: 100 },
         { text: "Toptancı", value: "supplier", width: 160 },
         { text: "Tür", value: "type", width: 110 },
-        { text: "Ayar", value: "ayar", width: 90 },
-        { text: "Geliş", value: "cost", width: 110, align: "end" },
+/*        { text: "Geliş", value: "cost", width: 110, align: "end" },
         { text: "Ekstra", value: "extras", width: 110, align: "end" },
         { text: "Kâr %", value: "profitPct", width: 90, align: "end" },
         { text: "Kâr TL", value: "profitTL", width: 110, align: "end" },
         { text: "KDV %", value: "vatPercent", width: 90, align: "end" },
-        { text: "Satış (KDV Dhl)", value: "price", width: 150, align: "end" },
-        { text: "Stok", value: "stock", width: 90, align: "end" },
+        { text: "Satış (KDV Dhl)", value: "price", width: 150, align: "end" }, */
+        { text: "Stok", value: "stock", width: 20, align: "end" },
         { text: "Barkod", value: "barcode", width: 140 },
-        { text: "SKU", value: "sku", width: 120 },
+        //{ text: "SKU", value: "sku", width: 120 },
         { text: "", value: "ops", sortable: false, width: 140, align: "end" },
       ],
 

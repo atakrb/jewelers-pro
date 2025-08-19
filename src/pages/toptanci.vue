@@ -19,6 +19,7 @@
             <v-list-item-title class="font-weight-bold">Jewelers Pro</v-list-item-title>
             <v-list-item-subtitle>Mağaza Paneli</v-list-item-subtitle>
           </v-list-item-content>
+
         </v-list-item>
 
         <v-divider class="mb-2" />
@@ -37,12 +38,21 @@
           <v-btn v-for="c in accents" :key="c" icon small :style="{ color:c }" @click="setAccent(c)">
             <v-icon>mdi-circle</v-icon>
           </v-btn>
+
         </v-list-item>
 
         <v-list-item class="rounded-lg" @click="cycleTheme">
           <v-list-item-icon><v-icon>mdi-theme-light-dark</v-icon></v-list-item-icon>
           <v-list-item-title>Tema</v-list-item-title>
           <v-spacer/><v-chip x-small>{{ themeLabel }}</v-chip>
+        </v-list-item>
+        <v-list-item :to="{ name:'musteriBilgi' }" class="rounded-lg" link>
+          <v-list-item-icon><v-icon>mdi-lifebuoy</v-icon></v-list-item-icon>
+          <v-list-item-title>Destek</v-list-item-title>
+        </v-list-item>
+        <v-list-item :to="{ name:'urunler' }" class="rounded-lg" link>
+          <v-list-item-icon><v-icon>mdi-plus</v-icon></v-list-item-icon>
+          <v-list-item-title>Yeni Sipariş Ekle</v-list-item-title>
         </v-list-item>
       </v-list>
     </v-navigation-drawer>
@@ -516,7 +526,7 @@ export default {
       drawer: this.$vuetify?.breakpoint?.lgAndUp || false,
       mini:   this.$vuetify?.breakpoint?.lgAndUp || false,
       accent: localStorage.getItem('jp_accent') || '#5865F2',
-      accents: ['#5865F2','#0EA5E9','#22C55E','#F59E0B','#EF4444','#8B5CF6'],
+      accents: ["#5B6EF7","#6E7CFF","#7C8AFF","#4FA5FF","#36C2C2","#E5B25E","#8BA0B8"],
       drawerItems: [
         { title:'Ana Sayfa',    icon:'mdi-view-dashboard-outline', to:'home' },
         { title:'Satış',        icon:'mdi-cash-register',          to:'satis' },

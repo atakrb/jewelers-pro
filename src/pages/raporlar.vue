@@ -259,7 +259,7 @@ export default {
       drawer: this.$vuetify?.breakpoint?.lgAndUp || false,
       mini: this.$vuetify?.breakpoint?.lgAndUp || false,
       accent: localStorage.getItem('jp_accent') || '#5865F2',
-      accents: ['#5865F2','#0EA5E9','#22C55E','#F59E0B','#EF4444','#8B5CF6'],
+      accents: ["#5B6EF7","#6E7CFF","#7C8AFF","#4FA5FF","#36C2C2","#E5B25E","#8BA0B8"],
       drawerItems: [
         { title:'Ana Sayfa',    icon:'mdi-view-dashboard-outline', to:'home' },
         { title:'Satış',        icon:'mdi-cash-register',          to:'satis' },
