@@ -67,19 +67,34 @@
       </v-list>
     </v-navigation-drawer>
 
-    <!-- HERO -->
-<v-row>
-  <v-col cols="1"><a href="https://www.shopier.com/ShulesFines"><img style="height: 127px; width:135px" src="https://i.etsystatic.com/41872415/r/isla/718c5b/61411742/isla_180x180.61411742_m1dinmtg.jpg"><img></a></v-col>
+    <!-- HERO (logo içeride, kayma yok) -->
+    <div class="hero">
+      <div class="hero-glow" :style="{ '--accent': accent }"></div>
 
-  <v-col cols="11">           <div class="hero">
-    <div class="hero-glow" :style="{ '--accent': accent }"></div>
-    <div class="hero-content"> <div class="overline mb-1">JEWELERS PRO</div>
-      <h2 class="hero-title"> Shulesfines</h2>
+      <div class="hero-inner">
+        <a
+            class="hero-logo-link"
+            href="https://www.shopier.com/ShulesFines"
+            target="_blank"
+            rel="noopener"
+            aria-label="Shulesfines mağaza"
+        >
+          <!-- width/height sabit -> layout shift yok -->
+          <img
+              class="hero-logo"
+              src="https://i.etsystatic.com/41872415/r/isla/718c5b/61411742/isla_180x180.61411742_m1dinmtg.jpg"
+              alt="Shulesfines"
+              width="110"
+              height="110"
+          />
+        </a>
+
+        <div class="hero-content">
+          <div class="overline mb-1">JEWELERS PRO</div>
+          <h2 class="hero-title">Shulesfines</h2>
+        </div>
+      </div>
     </div>
-  </div></v-col>
-</v-row>
-
-
 
     <!-- HIZLI AKSİYONLAR -->
     <v-container class="pt-4 pb-0">
@@ -204,7 +219,7 @@ export default {
     }
   },
   methods: {
-    // kart görünümü (gölge yok; koyu yüzey + ince kenar + cam parıltı üstte)
+    // kart görünümü
     cardStyle(){
       return {
         '--accent': this.accent,
@@ -305,11 +320,35 @@ export default {
   filter: blur(42px);
   opacity:.45;
 }
-.hero-content{
+
+/* LOGO + METİN aynı hizada */
+.hero-inner{
   position: relative;
-  height:100%;
-  display:flex; flex-direction:column; justify-content:center;
-  padding: 16px 24px;
+  z-index: 1;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 24px;
+}
+
+/* Kayma olmasın diye sabit ölçü verildi */
+.hero-logo{
+  display: block;
+  width: 110px;
+  height: 110px;
+  object-fit: cover;
+  border-radius: 12px;
+  background: #fff;
+  border: 1px solid var(--hairline-strong);
+  box-shadow: 0 6px 18px rgba(0,0,0,.08);
+}
+
+.hero-content{
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  min-width: 0; /* metin taşmasın */
 }
 .hero-title{ margin:0; font-weight:800; letter-spacing:.2px; }
 .hero-sub{ opacity:.8 }

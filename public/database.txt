@@ -2,62 +2,34 @@
   "settings": {
     "currency": "TRY",
     "defaultVatPercent": 20,
-    "roundingOptions": ["none", "to10", "to100", "to1000", "end_990"]
+    "roundingOptions": ["none", "to10", "to100", "to1000", "end_90", "end_990"]
   },
 
-  "platforms": ["Web", "Instagram", "Trendyol", "Hepsiburada", "Mağaza"],
+  "platforms": ["Web", "Instagram", "Trendyol", "Hepsiburada", "Mağaza", "Etsy"],
 
   "categories": [
-    { "id": "diamond",  "name": "Pırlanta", "description": "Pırlanta ürünleri", "parentId": null, "color": "#F6F1FB", "defaultMarkup": 25 },
-    { "id": "gold",     "name": "Altın",    "description": "Altın ürünleri",    "parentId": null, "color": "#FFF6EC", "defaultMarkup": 20 },
-    { "id": "silver",   "name": "Gümüş",    "description": "Gümüş ürünleri",    "parentId": null, "color": "#ECF9FA", "defaultMarkup": 35 },
+    { "id": "silver",   "name": "Gümüş Takı",  "description": "925 ayar gümüş ürünler", "parentId": null, "color": "#ECF9FA", "defaultMarkup": 35 },
+    { "id": "steel",    "name": "Çelik Takı",  "description": "Paslanmaz çelik ürünler", "parentId": null, "color": "#E6EBF0", "defaultMarkup": 40 },
 
-    { "id": "ring",     "name": "Yüzük",    "description": "Yüzükler",          "parentId": null, "color": "#F8F8FF", "defaultMarkup": 20 },
-    { "id": "necklace", "name": "Kolye",    "description": "Kolye ve zincir",   "parentId": null, "color": "#F0FFF8", "defaultMarkup": 22 },
-    { "id": "earring",  "name": "Küpe",     "description": "Küpe",              "parentId": null, "color": "#FFF0F6", "defaultMarkup": 22 },
-    { "id": "bracelet", "name": "Bileklik", "description": "Bileklik",          "parentId": null, "color": "#F3FFF0", "defaultMarkup": 18 },
-    { "id": "set",      "name": "Set",      "description": "Takı setleri",      "parentId": null, "color": "#F7F7F7", "defaultMarkup": 18 }
+    { "id": "ring",     "name": "Yüzük",       "description": "Yüzükler", "parentId": null, "color": "#F8F8FF", "defaultMarkup": 20 },
+    { "id": "necklace", "name": "Kolye",       "description": "Kolye ve zincir", "parentId": null, "color": "#F0FFF8", "defaultMarkup": 22 },
+    { "id": "earring",  "name": "Küpe",        "description": "Küpe", "parentId": null, "color": "#FFF0F6", "defaultMarkup": 22 },
+    { "id": "bracelet", "name": "Bileklik",    "description": "Bileklik", "parentId": null, "color": "#F3FFF0", "defaultMarkup": 18 },
+    { "id": "set",      "name": "Set",         "description": "Takı setleri", "parentId": null, "color": "#F7F7F7", "defaultMarkup": 18 },
+    { "id": "chain",    "name": "Zincir",      "description": "Zincirler", "parentId": null, "color": "#F6F1FB", "defaultMarkup": 25 }
   ],
 
   "suppliers": [
     {
       "id": 1,
-      "name": "Anadolu Kuyumculuk",
-      "phone": "0 (212) 555 11 22",
-      "email": "satis@anadolukuyum.com",
-      "address": "İstanbul",
-      "notes": "Aylık iskonto %3",
-      "items": [
-        {
-          "id": 11, "name": "Pırlanta Yüzük", "karat": 18, "ayar": "18 Ayar",
-          "qty": 3, "cost": 18000, "extras": 500,
-          "pricingMode": "markup", "markupPercent": 20, "profitTL": 0, "targetPrice": null,
-          "vatPercent": 20, "vatIncluded": true, "rounding": "to100",
-          "buyDate": "2025-08-05", "invoiceNo": "A-20250805-001"
-        },
-        {
-          "id": 12, "name": "Altın Yüzük", "karat": 14, "ayar": "14 Ayar",
-          "qty": 8, "cost": 5200, "extras": 100,
-          "pricingMode": "profit", "markupPercent": 0, "profitTL": 800, "targetPrice": null,
-          "vatPercent": 20, "vatIncluded": true, "rounding": "to10",
-          "buyDate": "2025-08-05", "invoiceNo": "A-20250805-002"
-        }
-      ],
-      "invoices": [
-        { "id": 10001, "number": "A-20250805-001", "date": "2025-08-05", "total": 55500, "url": "", "note": "Pırlanta Yüzük (3 adet)" },
-        { "id": 10002, "number": "A-20250805-002", "date": "2025-08-05", "total": 42400, "url": "", "note": "Altın Yüzük (8 adet)" }
-      ]
-    },
-    {
-      "id": 2,
       "name": "Gümüş Dünyası",
       "phone": "0 (312) 444 33 22",
       "email": "info@gumusdunyasi.com",
       "address": "Ankara",
-      "notes": "",
+      "notes": "925 ayar gümüş takıların ana tedarikçisi. Aylık %5 iskonto.",
       "items": [
         {
-          "id": 86918091, "name": "Gümüş Kolye", "karat": 0, "ayar": "925",
+          "id": 86918091, "name": "Gümüş Kolye (Zincir)", "karat": 0, "ayar": "925",
           "qty": 15, "cost": 700, "extras": 50,
           "pricingMode": "profit", "markupPercent": 0, "profitTL": 300, "targetPrice": null,
           "vatPercent": 20, "vatIncluded": true, "rounding": "to10",
@@ -71,7 +43,7 @@
           "buyDate": "2025-08-06", "invoiceNo": "B-20250806-002"
         },
         {
-          "id": 400, "name": "Test Kolye (86940573)", "karat": 0, "ayar": "925",
+          "id": 400, "name": "Gümüş Kolye (Mavi Boncuklu)", "karat": 0, "ayar": "925",
           "qty": 9, "cost": 500, "extras": 50,
           "pricingMode": "profit", "markupPercent": 0, "profitTL": 250, "targetPrice": null,
           "vatPercent": 20, "vatIncluded": true, "rounding": "to10",
@@ -79,145 +51,137 @@
         }
       ],
       "invoices": [
-        { "id": 20001, "number": "86918091", "date": "2025-08-06", "total": 11250, "url": "", "note": "Gümüş Kolye (15 adet)" },
-        { "id": 20002, "number": "B-20250806-002", "date": "2025-08-06", "total": 6900,  "url": "", "note": "Gümüş Bileklik (10 adet)" },
-        { "id": 20003, "number": "B-20250818-003", "date": "2025-08-18", "total": 4950,  "url": "", "note": "Test Kolye (9 adet, barkod 86940573)" }
+        { "id": 10001, "number": "B-20250806-001", "date": "2025-08-06", "total": 11250, "url": "", "note": "Gümüş Kolye (15 adet)" },
+        { "id": 10002, "number": "B-20250806-002", "date": "2025-08-06", "total": 6900,  "url": "", "note": "Gümüş Bileklik (10 adet)" },
+        { "id": 10003, "number": "B-20250818-003", "date": "2025-08-18", "total": 4950,  "url": "", "note": "Gümüş Kolye (9 adet, barkod 86940573)" }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "Çelik Atölyesi",
+      "phone": "0 (212) 222 55 66",
+      "email": "satis@celikatolyesi.com",
+      "address": "İstanbul",
+      "notes": "Paslanmaz çelik takılar için özel üretim yapıyorlar.",
+      "items": [
+        {
+          "id": 305, "name": "Çelik Kolye (Minimal)", "karat": 0, "ayar": "Çelik",
+          "qty": 20, "cost": 150, "extras": 20,
+          "pricingMode": "markup", "markupPercent": 40, "profitTL": 0, "targetPrice": null,
+          "vatPercent": 20, "vatIncluded": true, "rounding": "end_90",
+          "buyDate": "2025-08-10", "invoiceNo": "C-20250810-001"
+        }
+      ],
+      "invoices": [
+        { "id": 20001, "number": "C-20250810-001", "date": "2025-08-10", "total": 3400, "url": "", "note": "Çelik Kolye (20 adet)" }
       ]
     },
     {
       "id": 3,
-      "name": "Ata Tedarik",
-      "phone": "0 (216) 555 44 77",
-      "email": "tedarik@zen.com",
-      "address": "İstanbul",
-      "notes": "Pırlanta ürünlerde hızlı sevk",
+      "name": "Ege Gümüş",
+      "phone": "0 (232) 555 11 22",
+      "email": "info@egegumus.com",
+      "address": "İzmir",
+      "notes": "El yapımı gümüş takılarda uzman.",
       "items": [
         {
-          "id": 31, "name": "Pırlanta Küpe", "karat": 18, "ayar": "18 Ayar",
-          "qty": 5, "cost": 20000, "extras": 600,
-          "pricingMode": "target", "markupPercent": 0, "profitTL": 0, "targetPrice": 25990,
-          "vatPercent": 20, "vatIncluded": true, "rounding": "end_990",
-          "buyDate": "2025-08-07", "invoiceNo": "C-20250807-001"
+          "id": 306, "name": "Gümüş Set (Kolye+Küpe)", "karat": 0, "ayar": "925",
+          "qty": 5, "cost": 1200, "extras": 100,
+          "pricingMode": "target", "markupPercent": 0, "profitTL": 0, "targetPrice": 1690,
+          "vatPercent": 20, "vatIncluded": true, "rounding": "end_90",
+          "buyDate": "2025-08-12", "invoiceNo": "D-20250812-001"
         }
       ],
       "invoices": [
-        { "id": 30001, "number": "C-20250807-001", "date": "2025-08-07", "total": 103000, "url": "", "note": "Pırlanta Küpe (5 adet)" }
+        { "id": 30001, "number": "D-20250812-001", "date": "2025-08-12", "total": 6500, "url": "", "note": "Gümüş Set (5 adet)" }
       ]
     }
   ],
 
   "products": [
     {
-      "id": 101, "sku": "86940573",
-      "name": "Tektaş Yüzük", "isim": "Tektaş Yüzük",
-      "type": "Yüzük", "karat": 18, "ayar": "18 Ayar",
-      "stock": 3, "stok": 3,
-      "barcode": "86918091",
-      "cost": 18000, "extras": 500,
-      "pricingMode": "markup", "markupPercent": 20, "profitTL": null, "targetPrice": null,
-      "vatPercent": 20, "vatIncluded": true, "rounding": "to100",
-      "colorOptions": ["Beyaz Altın", "Sarı Altın"],
-      "supplierId": 1,
-      "categoryId": "ring",
-      "categoryIds": ["diamond", "ring"]
-    },
-    {
-      "id": 102, "sku": "ALT-YZK-014",
-      "name": "Altın Yüzük", "isim": "Altın Yüzük",
-      "type": "Yüzük", "karat": 14, "ayar": "14 Ayar",
-      "stock": 0, "stok": 0,
-      "barcode": "8690000001028",
-      "cost": 5200, "extras": 100,
-      "pricingMode": "profit", "markupPercent": null, "profitTL": 800, "targetPrice": null,
-      "vatPercent": 20, "vatIncluded": true, "rounding": "to10",
-      "colorOptions": ["Sarı Altın"],
-      "supplierId": 1,
-      "categoryId": "ring",
-      "categoryIds": ["gold", "ring"]
-    },
-    {
       "id": 201, "sku": "GMS-KLY-925",
-      "name": "Gümüş Kolye", "isim": "Gümüş Kolye",
+      "name": "Gümüş Kolye (Zincir)", "isim": "Gümüş Kolye (Zincir)",
       "type": "Kolye", "karat": 0, "ayar": "925",
       "stock": 12, "stok": 12,
       "barcode": "86918091",
       "cost": 700, "extras": 50,
       "pricingMode": "profit", "markupPercent": null, "profitTL": 300, "targetPrice": null,
       "vatPercent": 20, "vatIncluded": true, "rounding": "to10",
-      "colorOptions": [],
-      "supplierId": 2,
+      "colorOptions": ["Gümüş"],
+      "supplierId": 1,
       "categoryId": "necklace",
       "categoryIds": ["silver", "necklace"]
     },
     {
-      "id": 301, "sku": "PRL-KPE-303",
-      "name": "Pırlanta Küpe", "isim": "Pırlanta Küpe",
-      "type": "Küpe", "karat": 18, "ayar": "18 Ayar",
-      "stock": 5, "stok": 5,
-      "barcode": "8690000003012",
-      "cost": 20000, "extras": 600,
-      "pricingMode": "target", "markupPercent": null, "profitTL": null, "targetPrice": 25990,
+      "id": 202, "sku": "GMS-BLK-925",
+      "name": "Gümüş Bileklik (İnce Zincir)", "isim": "Gümüş Bileklik (İnce Zincir)",
+      "type": "Bileklik", "karat": 0, "ayar": "925",
+      "stock": 10, "stok": 10,
+      "barcode": "8690000002025",
+      "cost": 650, "extras": 40,
+      "pricingMode": "target", "markupPercent": null, "profitTL": null, "targetPrice": 990,
       "vatPercent": 20, "vatIncluded": true, "rounding": "end_990",
-      "colorOptions": ["Beyaz Altın"],
-      "supplierId": 3,
-      "categoryId": "earring",
-      "categoryIds": ["diamond", "earring"]
-    },
-    {
-      "id": 302, "sku": "ALT-BLK-010",
-      "name": "Altın Bileklik", "isim": "Altın Bileklik",
-      "type": "Bileklik", "karat": 14, "ayar": "14 Ayar",
-      "stock": 7, "stok": 7,
-      "barcode": "8690000003029",
-      "cost": 7800, "extras": 200,
-      "pricingMode": "markup", "markupPercent": 18, "profitTL": null, "targetPrice": null,
-      "vatPercent": 20, "vatIncluded": true, "rounding": "to100",
-      "colorOptions": ["Sarı Altın", "Rose"],
+      "colorOptions": ["Gümüş"],
       "supplierId": 1,
       "categoryId": "bracelet",
-      "categoryIds": ["gold", "bracelet"]
+      "categoryIds": ["silver", "bracelet"]
     },
     {
-      "id": 303, "sku": "GMS-KPE-021",
-      "name": "Gümüş Küpe", "isim": "Gümüş Küpe",
-      "type": "Küpe", "karat": 0, "ayar": "925",
+      "id": 305, "sku": "CEL-KLY-MIN",
+      "name": "Çelik Kolye (Minimal)", "isim": "Çelik Kolye (Minimal)",
+      "type": "Kolye", "karat": 0, "ayar": "Çelik",
       "stock": 20, "stok": 20,
-      "barcode": "8690000003036",
-      "cost": 300, "extras": 30,
-      "pricingMode": "profit", "markupPercent": null, "profitTL": 150, "targetPrice": null,
-      "vatPercent": 20, "vatIncluded": true, "rounding": "to10",
-      "colorOptions": [],
+      "barcode": "8690000003050",
+      "cost": 150, "extras": 20,
+      "pricingMode": "markup", "markupPercent": 40, "profitTL": null, "targetPrice": null,
+      "vatPercent": 20, "vatIncluded": true, "rounding": "end_90",
+      "colorOptions": ["Gümüş", "Altın"],
       "supplierId": 2,
-      "categoryId": "earring",
-      "categoryIds": ["silver", "earring"]
+      "categoryId": "necklace",
+      "categoryIds": ["steel", "necklace"]
     },
     {
-      "id": 304, "sku": "SET-PRL-002",
-      "name": "Pırlanta Set (Kolye+Küpe)", "isim": "Pırlanta Set (Kolye+Küpe)",
-      "type": "Set", "karat": 18, "ayar": "18 Ayar",
-      "stock": 2, "stok": 2,
-      "barcode": "8690000003043",
-      "cost": 34000, "extras": 900,
-      "pricingMode": "target", "markupPercent": null, "profitTL": null, "targetPrice": 44990,
-      "vatPercent": 20, "vatIncluded": true, "rounding": "end_990",
-      "colorOptions": ["Beyaz Altın"],
+      "id": 306, "sku": "GMS-SET-EGE",
+      "name": "Gümüş Set (Kolye+Küpe)", "isim": "Gümüş Set (Kolye+Küpe)",
+      "type": "Set", "karat": 0, "ayar": "925",
+      "stock": 5, "stok": 5,
+      "barcode": "8690000003067",
+      "cost": 1200, "extras": 100,
+      "pricingMode": "target", "markupPercent": null, "profitTL": null, "targetPrice": 1690,
+      "vatPercent": 20, "vatIncluded": true, "rounding": "end_90",
+      "colorOptions": ["Gümüş"],
       "supplierId": 3,
       "categoryId": "set",
-      "categoryIds": ["diamond", "set"]
+      "categoryIds": ["silver", "set"]
     },
     {
       "id": 400, "sku": "DEN-86940573",
-      "name": "Test Kolye (Genel)", "isim": "Test Kolye (Genel)",
+      "name": "Gümüş Kolye (Mavi Boncuklu)", "isim": "Gümüş Kolye (Mavi Boncuklu)",
       "type": "Kolye", "karat": 0, "ayar": "925",
       "stock": 9, "stok": 9,
       "barcode": "86940573",
       "cost": 500, "extras": 50,
       "pricingMode": "profit", "markupPercent": null, "profitTL": 250, "targetPrice": null,
       "vatPercent": 20, "vatIncluded": true, "rounding": "to10",
-      "colorOptions": [],
-      "supplierId": 2,
+      "colorOptions": ["Gümüş"],
+      "supplierId": 1,
       "categoryId": "necklace",
       "categoryIds": ["silver", "necklace"]
+    },
+    {
+      "id": 401, "sku": "CEL-KPE-HALKA",
+      "name": "Çelik Halka Küpe", "isim": "Çelik Halka Küpe",
+      "type": "Küpe", "karat": 0, "ayar": "Çelik",
+      "stock": 35, "stok": 35,
+      "barcode": "8690000004018",
+      "cost": 80, "extras": 10,
+      "pricingMode": "markup", "markupPercent": 50, "profitTL": null, "targetPrice": null,
+      "vatPercent": 20, "vatIncluded": true, "rounding": "to10",
+      "colorOptions": ["Gümüş", "Altın"],
+      "supplierId": 2,
+      "categoryId": "earring",
+      "categoryIds": ["steel", "earring"]
     }
   ],
 
@@ -242,18 +206,29 @@
       "district": "Çankaya",
       "addressShort": "Atatürk Bulvarı No:45 Çankaya/Ankara",
       "channels": ["Instagram"],
-      "orderIds": [1002]
+      "orderIds": [1002, 1004]
     },
     {
       "id": 5003,
-      "name": "Mehmet Yılmaz", "fullName": "Mehmet Yılmaz",
+      "name": "Ayşe Yılmaz", "fullName": "Ayşe Yılmaz",
       "phone": "0534 555 7788",
-      "email": "",
+      "email": "ayse@example.com",
       "city": "İzmir",
       "district": "Konak",
       "addressShort": "İnönü Cd. No:2 Konak/İzmir",
       "channels": ["Mağaza"],
       "orderIds": [1003]
+    },
+    {
+      "id": 5004,
+      "name": "Ceren Kara", "fullName": "Ceren Kara",
+      "phone": "0544 333 4455",
+      "email": "ceren@example.com",
+      "city": "Bursa",
+      "district": "Osmangazi",
+      "addressShort": "Fatih Sultan Mehmet Bulv. No:7 Bursa",
+      "channels": ["Trendyol"],
+      "orderIds": [1005]
     }
   ],
 
@@ -265,8 +240,7 @@
       "date": "2025-08-16T11:10:00.000Z",
       "status": "Kargoya Verildi",
       "lines": [
-        { "productId": 201, "qty": 1, "vatPercent": 20, "discountType": null, "discountValue": 0, "manualPrice": null },
-        { "productId": 101, "qty": 1, "vatPercent": 20, "discountType": "pct", "discountValue": 5, "manualPrice": null }
+        { "productId": 201, "qty": 1, "vatPercent": 20, "discountType": null, "discountValue": 0, "manualPrice": null }
       ],
       "shipmentId": 1,
       "note": ""
@@ -278,7 +252,7 @@
       "date": "2025-08-15T10:20:00.000Z",
       "status": "Dağıtımda",
       "lines": [
-        { "productId": 301, "qty": 1, "vatPercent": 20, "discountType": null, "discountValue": 0, "manualPrice": null }
+        { "productId": 202, "qty": 1, "vatPercent": 20, "discountType": null, "discountValue": 0, "manualPrice": null }
       ],
       "shipmentId": 2,
       "note": "Kapıda ödeme"
@@ -290,10 +264,34 @@
       "date": "2025-08-13T13:15:00.000Z",
       "status": "Teslim Edildi",
       "lines": [
-        { "productId": 303, "qty": 1, "vatPercent": 20, "discountType": null, "discountValue": 0, "manualPrice": null }
+        { "productId": 305, "qty": 1, "vatPercent": 20, "discountType": null, "discountValue": 0, "manualPrice": null }
       ],
       "shipmentId": 3,
       "note": ""
+    },
+    {
+      "id": 1004,
+      "customerId": 5002,
+      "platform": "Web",
+      "date": "2025-08-17T15:45:00.000Z",
+      "status": "Hazırlanıyor",
+      "lines": [
+        { "productId": 400, "qty": 1, "vatPercent": 20, "discountType": "pct", "discountValue": 10, "manualPrice": null }
+      ],
+      "shipmentId": null,
+      "note": "Acil gönderim talebi"
+    },
+    {
+      "id": 1005,
+      "customerId": 5004,
+      "platform": "Trendyol",
+      "date": "2025-08-18T09:30:00.000Z",
+      "status": "Hazırlanıyor",
+      "lines": [
+        { "productId": 306, "qty": 1, "vatPercent": 20, "discountType": null, "discountValue": 0, "manualPrice": null }
+      ],
+      "shipmentId": null,
+      "note": "Trendyol Sipariş Numarası: 987654321"
     }
   ],
 
@@ -304,7 +302,7 @@
       "address": "Av. Cad. No:10 D:5", "city": "İstanbul", "district": "Kadıköy",
       "carrier": "Yurtiçi", "service": "Standart", "trackingNo": "YT123456789TR",
       "status": "Kargoya Verildi",
-      "items": 2, "weight": 0.45, "shippingFee": 89,
+      "items": 1, "weight": 0.45, "shippingFee": 89,
       "cod": false, "codAmount": 0,
       "createdAt": "2025-08-16T11:10:00.000Z",
       "shippedAt": "2025-08-16T14:30:00.000Z",
@@ -334,7 +332,7 @@
     },
     {
       "id": 3, "orderId": 1003, "platform": "Mağaza",
-      "customer": "Mehmet Yılmaz", "phone": "0534 555 7788", "email": "",
+      "customer": "Ayşe Yılmaz", "phone": "0534 555 7788", "email": "ayse@example.com",
       "address": "İnönü Cd. No:2", "city": "İzmir", "district": "Konak",
       "carrier": "MNG", "service": "Standart", "trackingNo": "MN111222333TR",
       "status": "Teslim Edildi",
@@ -353,20 +351,22 @@
   ],
 
   "stockMovements": [
-    { "id": "sm-1", "date": "2025-08-05T10:00:00.000Z", "productId": 101, "type": "in",  "qty": 3,  "reason": "Alış",  "refType": "supplier", "refId": 1 },
-    { "id": "sm-2", "date": "2025-08-05T10:10:00.000Z", "productId": 102, "type": "in",  "qty": 8,  "reason": "Alış",  "refType": "supplier", "refId": 1 },
-    { "id": "sm-3", "date": "2025-08-06T11:00:00.000Z", "productId": 201, "type": "in",  "qty": 12, "reason": "Alış",  "refType": "supplier", "refId": 2 },
-    { "id": "sm-4", "date": "2025-08-07T12:00:00.000Z", "productId": 301, "type": "in",  "qty": 5,  "reason": "Alış",  "refType": "supplier", "refId": 3 },
-    { "id": "sm-5", "date": "2025-08-15T10:25:00.000Z", "productId": 301, "type": "out", "qty": 1,  "reason": "Satış", "refType": "order",    "refId": 1002 },
+    { "id": "sm-1", "date": "2025-08-06T11:00:00.000Z", "productId": 201, "type": "in",  "qty": 12, "reason": "Alış",  "refType": "supplier", "refId": 1 },
+    { "id": "sm-2", "date": "2025-08-06T11:05:00.000Z", "productId": 202, "type": "in",  "qty": 10, "reason": "Alış",  "refType": "supplier", "refId": 1 },
+    { "id": "sm-3", "date": "2025-08-10T12:00:00.000Z", "productId": 305, "type": "in",  "qty": 20, "reason": "Alış",  "refType": "supplier", "refId": 2 },
+    { "id": "sm-4", "date": "2025-08-12T13:00:00.000Z", "productId": 306, "type": "in",  "qty": 5,  "reason": "Alış",  "refType": "supplier", "refId": 3 },
+    { "id": "sm-5", "date": "2025-08-15T10:25:00.000Z", "productId": 202, "type": "out", "qty": 1,  "reason": "Satış", "refType": "order",    "refId": 1002 },
     { "id": "sm-6", "date": "2025-08-16T11:20:00.000Z", "productId": 201, "type": "out", "qty": 1,  "reason": "Satış", "refType": "order",    "refId": 1001 },
-    { "id": "sm-7", "date": "2025-08-18T09:00:00.000Z", "productId": 400, "type": "in",  "qty": 9,  "reason": "Alış",  "refType": "supplier", "refId": 2 }
+    { "id": "sm-7", "date": "2025-08-18T09:00:00.000Z", "productId": 400, "type": "in",  "qty": 9,  "reason": "Alış",  "refType": "supplier", "refId": 1 },
+    { "id": "sm-8", "date": "2025-08-18T09:35:00.000Z", "productId": 306, "type": "out", "qty": 1,  "reason": "Satış", "refType": "order",    "refId": 1005 },
+    { "id": "sm-9", "date": "2025-08-18T16:00:00.000Z", "productId": 401, "type": "in",  "qty": 35, "reason": "Alış",  "refType": "supplier", "refId": 2 }
   ],
 
   "counters": {
-    "nextProductId": 401,
-    "nextOrderId": 1004,
+    "nextProductId": 402,
+    "nextOrderId": 1006,
     "nextShipmentId": 4,
-    "nextCustomerId": 5004,
-    "nextStockMoveId": 8
+    "nextCustomerId": 5005,
+    "nextStockMoveId": 10
   }
 }

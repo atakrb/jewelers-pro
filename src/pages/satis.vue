@@ -52,6 +52,15 @@
           <v-spacer />
           <v-chip x-small>{{ themeLabel }}</v-chip>
         </v-list-item>
+        <v-list-item :to="{ name:'musteriBilgi' }" class="rounded-lg" link>
+          <v-list-item-icon><v-icon>mdi-lifebuoy</v-icon></v-list-item-icon>
+          <v-list-item-title>Destek</v-list-item-title>
+        </v-list-item>
+
+        <v-list-item :to="{ name:'urunler' }" class="rounded-lg" link>
+          <v-list-item-icon><v-icon>mdi-plus</v-icon></v-list-item-icon>
+          <v-list-item-title>Yeni Sipariş Ekle</v-list-item-title>
+        </v-list-item>
       </v-list>
     </v-navigation-drawer>
 
@@ -157,42 +166,49 @@
 
             <v-divider />
 
-            <v-card-text class="pa-3">
+            <v-card-text class="pa-2">
               <div v-if="cart.length === 0" class="grey--text text-center py-1">
                 Sepet boş. Barkod okut veya arayıp ekle.
               </div>
 
               <div v-else class="cart-grid">
-                <!-- TEK KART – tüm işlemler 3 nokta menüde -->
-                <v-card v-for="(l, i) in cart" :key="l.key" outlined class="cart-item soft-card">
-                  <!-- HEADER -->
+                <!-- TEK KART (COMPACT) -->
+                <v-card
+                    v-for="(l, i) in cart"
+                    :key="l.key"
+                    outlined
+                    class="cart-item soft-card compact-cart"
+                >
                   <div class="item-header">
-                    <v-list-item class="pa-0">
-                      <v-list-item-avatar tile size="52" class="mr-3">
-                        <!-- <v-img :src="l.img" /> -->
-                        <v-icon class="grey--text">mdi-diamond-stone</v-icon>
+                    <v-list-item class="pa-0 dense-item">
+                      <v-list-item-avatar tile size="32" class="mr-2">
+                        <v-icon class="grey--text" small>mdi-diamond-stone</v-icon>
                       </v-list-item-avatar>
 
                       <v-list-item-content>
                         <div class="title-row">
-                          <v-list-item-title class="font-weight-bold truncate">
+                          <v-list-item-title class="font-weight-bold truncate compact-title">
                             {{ l.isim }}
                           </v-list-item-title>
 
-                          <!-- sağda fiyat -->
                           <div class="sum-inline">
                             <div class="overline muted">TUTAR</div>
-                            <div class="headline font-weight-bold" :style="{ color: accent }">
+                            <div class="price-compact" style="color: #22C55E">
                               {{ tl(lineGross(l)) }}
                             </div>
                           </div>
                         </div>
 
-                        <v-list-item-subtitle class="mt-1">
+                        <v-list-item-subtitle class="mt-0 compact-sub">
                           <span class="muted">#{{ l.sku || l.id }}</span>
-                          <v-chip x-small class="ml-2" v-if="l.karat">{{ l.karat }}k</v-chip>
+                          <v-chip x-small class="ml-1" v-if="l.karat">{{ l.karat }}k</v-chip>
                           <v-chip x-small class="ml-1" v-if="l.ayar">{{ l.ayar }}</v-chip>
-                          <v-chip x-small :color="l.stok > 0 ? 'green' : 'red'" text-color="white" class="ml-2">
+                          <v-chip
+                              x-small
+                              :color="l.stok > 0 ? 'green' : 'red'"
+                              text-color="white"
+                              class="ml-1"
+                          >
                             Stok: {{ l.stok }}
                           </v-chip>
                         </v-list-item-subtitle>
@@ -204,7 +220,7 @@
                           <v-icon color="red">mdi-trash-can</v-icon>
                         </v-btn>
 
-                        <!-- 3 nokta menü -->
+                        <!-- 3 NOKTA MENÜ -->
                         <v-menu offset-y>
                           <template v-slot:activator="{ on, attrs }">
                             <v-btn icon v-bind="attrs" v-on="on"><v-icon>mdi-dots-vertical</v-icon></v-btn>
@@ -230,12 +246,13 @@
                     </v-list-item>
                   </div>
 
-
-
-
-
-                  <!-- STOK UYARISI -->
-                  <v-alert v-if="aggregatedQty(l.id) > Number(l.stok || 0)" dense outlined type="error" class="mt-2">
+                  <v-alert
+                      v-if="aggregatedQty(l.id) > Number(l.stok || 0)"
+                      dense
+                      outlined
+                      type="error"
+                      class="mt-2"
+                  >
                     Stok yetersiz! Sepette toplam {{ aggregatedQty(l.id) }}, stokta {{ l.stok }} var.
                   </v-alert>
                 </v-card>
@@ -251,7 +268,7 @@
             </v-card-actions>
           </v-card>
 
-          <!-- MÜŞTERİ (opsiyonel basit) -->
+          <!-- MÜŞTERİ -->
           <v-card outlined class="soft-card mt-4 mb-4">
             <v-card-title class="subtitle-1 font-weight-bold">
               <v-icon left>mdi-account-circle-outline</v-icon>Müşteri
@@ -269,7 +286,7 @@
           </v-card>
         </v-col>
 
-        <!-- SAĞ BLOK = FİŞ & TOPLAM (Tüm fiyat/indirim burada) -->
+        <!-- SAĞ BLOK = FİŞ & TOPLAM -->
         <v-col cols="12" md="5" class="sticky-col">
           <v-card id="fisPrint" outlined class="soft-card">
             <v-card-title class="subtitle-1 font-weight-bold">
@@ -285,50 +302,22 @@
                 Fiş No: {{ receipt.no || '-' }} • Tarih: {{ receipt.date || nowStr }}
               </div>
 
-              <!-- GENEL İNDİRİM AYARLARI (sadece fişte) -->
+              <!-- GENEL İNDİRİM (fişte küçük preset) -->
               <v-row dense class="mb-1">
                 <v-col cols="12" class="d-flex align-center">
                   <div class="overline muted mr-2">Genel İndirim</div>
-
                   <v-btn-toggle v-model="selectedDiscount" class="soft-card">
                     <v-btn x-small :value="5">%5</v-btn>
                     <v-btn x-small :value="10">%10</v-btn>
                     <v-btn x-small :value="15">%15</v-btn>
                     <v-btn x-small :value="20">%20</v-btn>
                   </v-btn-toggle>
-
                   <v-spacer />
-
-                 <!-- İNDİRİM TÜRÜ indirim türü
-                 <v-select
-                      v-model="cartDiscount.type"
-                      :items="discountTypes"
-                      item-text="text"
-                      item-value="value"
-                      dense
-                      hide-details
-                      outlined
-                      class="mr-2"
-                      style="max-width: 130px"
-                  />
-                  <v-text-field
-                      v-model.number="cartDiscount.value"
-                      :disabled="!cartDiscount.type"
-                      type="number"
-                      dense
-                      hide-details
-                      outlined
-                      label="Değer"
-                      min="0"
-                      :max="cartDiscount.type === 'pct' ? 100 : null"
-                      step="0.01"
-                      style="max-width: 120px"
-                  /> -->
                 </v-col>
               </v-row>
 
               <!-- LİSTELER -->
-              <v-simple-table class="soft-card"dense>
+              <v-simple-table dense class="soft-card">
                 <thead>
                 <tr>
                   <th class="text-left">Ürün</th>
@@ -378,7 +367,7 @@
 
               <v-list-item class="px-0">
                 <v-list-item-content><v-list-item-title class="headline font-weight-bold">Genel Toplam</v-list-item-title></v-list-item-content>
-                <v-list-item-action><v-list-item-title class="headline font-weight-bold" :style="{ color: accent }">{{ tl(totalGross) }}</v-list-item-title></v-list-item-action>
+                <v-list-item-action><v-list-item-title class="headline font-weight-bold" style="color:#22C55E">{{ tl(totalGross) }}</v-list-item-title></v-list-item-action>
               </v-list-item>
 
               <v-list-item class="px-0">
@@ -393,7 +382,9 @@
             </v-card-text>
 
             <v-card-actions class="px-4 pb-4">
-              <v-btn class="glass-btn" :disabled="!receipt.approved" @click="printFis"><v-icon left>mdi-printer</v-icon>Yazdır</v-btn>
+              <v-btn class="glass-btn" :disabled="!receipt.approved" @click="printFis">
+                <v-icon left>mdi-printer</v-icon>Yazdır
+              </v-btn>
               <v-spacer />
               <v-btn text class="glass-btn" @click="resetSale"><v-icon left>mdi-broom</v-icon>Yeni Satış</v-btn>
             </v-card-actions>
@@ -510,7 +501,7 @@ export default {
       ],
       cartDiscount: { type: null, value: 0 },
 
-      // Genel indirim preset (artık fişte)
+      // Genel indirim preset (fişte)
       selectedDiscount: null,
 
       // Müşteri
@@ -613,7 +604,7 @@ export default {
         this.receipt.approved = false;
         localStorage.setItem('jp_cart_disc', JSON.stringify(this.cartDiscount));
 
-        // preset senkronu: sadece %5/10/15/20 ise preset açık kalsın
+        // preset senkronu
         const v = (this.cartDiscount?.type === 'pct') ? Number(this.cartDiscount.value || 0) : null;
         const allowed = [5, 10, 15, 20];
         const preset = allowed.includes(v) ? v : null;
@@ -622,7 +613,6 @@ export default {
     },
     selectedDiscount(val) {
       if (val === null || val === undefined) {
-        // preset kapandıysa cartDiscount'ı bozma; sadece presetten gelmişse sıfırla
         if (['pct', null].includes(this.cartDiscount.type)) this.cartDiscount = { type: null, value: 0 };
       } else {
         this.cartDiscount = { type: 'pct', value: Number(val) || 0 };
@@ -781,7 +771,8 @@ export default {
     aggregatedQty(pid) { return this.cart.filter(x => String(x.id) === String(pid)).reduce((t, x) => t + Number(x.qty || 0), 0); },
 
     // ------- Sepet işlemleri -------
-    duplicateLine(i) { const c = { ...JSON.parse(JSON.stringify(this.cart[i])), key: this.newKey() }; this.cart.splice(i + 1, 0, c); },
+    duplicateLine(i) { const c = { ...JSON.parse(JSON.stringify(this.cart[i])), key: this.newKey() }; this.cart.splice(i + 1, 0, c); }
+    ,
     removeLine(i) { this.cart.splice(i, 1); this.receipt.approved = false; },
     incQty(i) {
       const l = this.cart[i];
@@ -868,10 +859,34 @@ export default {
     toast(t, c = 'green') { this.snack = { show: true, color: c, text: t }; },
     newKey() { return `${Date.now()}_${Math.floor(Math.random() * 10000)}`; },
   },
+  printFis() {
+    this.$nextTick(() => window.print());
+  }
+
 };
 </script>
 
 <style scoped>
+@media print {
+  @page { size: auto; margin: 8mm; }
+  html, body { background: #fff !important; }
+  /* Her şeyi gizle */
+  body * { visibility: hidden !important; }
+  /* Sadece fişi göster */
+  #fisPrint, #fisPrint * { visibility: visible !important; }
+  /* Fişi sayfaya yerleştir */
+  #fisPrint {
+    position: absolute !important;
+    left: 0; top: 0; width: 100% !important;
+    margin: 0 !important; padding: 0 !important;
+    background: #fff !important; color: #000 !important;
+    box-shadow: none !important; border: 0 !important;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+  /* Yazdır sırasında fiş altındaki butonları gizle */
+  #fisPrint .v-card__actions { display: none !important; }
+}
+
 /* başlıkta isim + fiyat yan yana */
 .title-row{
   display:grid;
@@ -881,6 +896,19 @@ export default {
 }
 .sum-inline{ text-align:right; }
 .truncate{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+/* ---- COMPACT CART ---- */
+.compact-cart { padding: 8px 10px; border-radius: 12px; }
+.cart-grid { gap: 8px; }                    /* kartlar arası boşluğu azalt */
+.dense-item { min-height: 44px; }           /* list-item yüksekliği */
+.compact-title { font-size: 15px; line-height: 1.2; }
+.compact-sub  { margin-top: 2px !important; font-size: 12px; opacity: .75; }
+.price-compact { font-weight: 800; font-size: 18px; line-height: 1.1; margin-top: -2px; }
+.overline { font-size: 10px; letter-spacing: .08em; }
+.compact-cart .v-chip { height: 18px; font-size: 10px; }
+.compact-cart .v-icon { font-size: 18px; }
+.compact-cart .v-list-item__avatar { margin-right: 8px !important; }
+.compact-cart .v-list-item { padding-top: 2px; padding-bottom: 2px; }
 
 /* GENEL KART */
 .soft-card {
@@ -920,14 +948,7 @@ export default {
 /* Sticky */
 .sticky-col { position: sticky; top: 84px; }
 
-/* Sepet */
-.cart-grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
-.cart-item { padding: 16px; }
-.item-header { display: flex; align-items: center; }
-.item-body { margin-top: 8px; gap: 16px; }
-.sum-section .headline { color: var(--v-primary-base, #1976d2); }
-.price-section .subtitle-1 { color: var(--v-primary-base, #1976d2); }
-
+/* Quantity (kullanıyorsan) */
 .qty-section { width: 160px; justify-content: flex-start; }
 .qty-input {
   width: 64px; text-align: center; border: 1px solid rgba(0,0,0,.12); border-radius: 10px;
