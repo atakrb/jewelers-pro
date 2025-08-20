@@ -61,7 +61,6 @@
           <v-list-item-title>Destek</v-list-item-title>
         </v-list-item>
 
-
         <v-list-item :to="{ name:'urunler' }" class="rounded-lg" link>
           <v-list-item-icon><v-icon>mdi-plus</v-icon></v-list-item-icon>
           <v-list-item-title>Yeni Sipariş Ekle</v-list-item-title>
@@ -181,14 +180,29 @@
               <div class="font-weight-medium">{{ item.name }}</div>
               <div class="caption grey--text">#{{ item.sku || item.id }} • {{ item.karat ? item.karat + 'k' : '' }} {{ item.ayar }}</div>
             </template>
-            <template v-slot:item.stock="{ item }">
-              <v-chip small :color="stockColor(item)" text-color="white">{{ item.stock }}</v-chip>
+
+            <!-- KATEGORİ ADI -->
+            <template v-slot:item.categoryId="{ item }">
+              {{ categoryName(item.categoryId) }}
             </template>
+
+            <!-- TOPTANCI ADI -->
+            <template v-slot:item.supplierId="{ item }">
+              {{ supplierName(item.supplierId) }}
+            </template>
+
+            <template v-slot:item.stock="{ item }">
+              <v-chip small :color="stockColor(item)" text-color="white">
+                {{ Number(item.stock || 0) }}
+              </v-chip>
+            </template>
+
             <template v-slot:item.minStock="{ item }">
               <div class="d-flex align-center justify-end">
                 <v-text-field v-model.number="item.minStock" type="number" min="0" dense hide-details class="text-right" style="max-width:80px"/>
               </div>
             </template>
+
             <template v-slot:item.unit="{ item }">{{ tl(priceCalc(item).priceGross) }}</template>
 
             <template v-slot:expanded-item="{ headers, item }">
@@ -259,72 +273,8 @@
           </v-data-table>
         </v-card>
 
-      <!-- SAYIM MODU
-
-        <v-card class="mt-4 table-card" outlined>
-          <v-card-title class="subtitle-1 font-weight-bold">
-            Sayım Modu
-            <v-spacer/><v-switch v-model="sayim.enabled" inset hide-details label="Aktif"/>
-          </v-card-title>
-
-          <v-expand-transition>
-            <div v-show="sayim.enabled">
-              <v-card-text>
-                <v-row dense>
-                  <v-col cols="12" md="5">
-                    <v-text-field v-model="sayim.q" dense outlined clearable
-                                  label="Barkod / SKU / ID" @keyup.enter="sayimQuickEnter"/>
-                  </v-col>
-                  <v-col cols="6" md="2">
-                    <v-text-field v-model.number="sayim.qty" type="number" min="0" dense outlined label="Sayım Adet"/>
-                  </v-col>
-                  <v-col cols="6" md="2">
-                    <v-btn block color="indigo" dark @click="sayimaEkle"><v-icon left small>mdi-plus</v-icon> Ekle</v-btn>
-                  </v-col>
-                  <v-col cols="12" md="3" class="d-flex justify-end">
-                    <v-btn small class="glass-btn mr-2" @click="exportSayimCSV"><v-icon left small>mdi-file-delimited</v-icon> CSV</v-btn>
-                    <v-btn small class="glass-btn" @click="yazdirSayim"><v-icon left small>mdi-printer</v-icon> Yazdır</v-btn>
-                  </v-col>
-                </v-row>
-
-                <div id="sayimPrint">
-                  <v-data-table :headers="sayimHeaders" :items="sayim.lines" dense hide-default-footer class="mt-2">
-                    <template v-slot:item.product="{ item }">
-                      <div class="font-weight-medium">{{ item.name }}</div>
-                      <div class="caption grey--text">#{{ item.sku || item.id }}</div>
-                    </template>
-                    <template v-slot:item.sys="{ item }">{{ item.system }}</template>
-                    <template v-slot:item.count="{ item }">
-                      <v-text-field v-model.number="item.counted" type="number" min="0" dense hide-details style="max-width:100px"/>
-                    </template>
-                    <template v-slot:item.delta="{ item }">
-                      <span :class="itemDelta(item)>=0 ? 'green--text' : 'red--text'">{{ itemDelta(item) }}</span>
-                    </template>
-                    <template v-slot:item.ops="{ item, index }">
-                      <v-btn icon x-small @click="sayimRemove(index)"><v-icon small>mdi-delete</v-icon></v-btn>
-                    </template>
-                    <template v-slot:footer.prepend>
-                      <div class="px-4 py-2">
-                        <v-chip small class="mr-2">Kalem: {{ sayim.lines.length }}</v-chip>
-                        <v-chip small color="teal" text-color="white" class="mr-2">Pozitif: {{ sayim.lines.filter(x=>itemDelta(x)>0).length }}</v-chip>
-                        <v-chip small color="orange" text-color="white" class="mr-2">Negatif: {{ sayim.lines.filter(x=>itemDelta(x)<0).length }}</v-chip>
-                        <v-chip small color="grey" text-color="white">Sıfır Delta: {{ sayim.lines.filter(x=>itemDelta(x)===0).length }}</v-chip>
-                      </div>
-                    </template>
-                  </v-data-table>
-                </div>
-              </v-card-text>
-
-              <v-card-actions class="px-4 pb-4">
-                <v-btn text @click="sayimClear" :disabled="sayim.lines.length===0">Temizle</v-btn>
-                <v-spacer/>
-                <v-btn color="success" dark :disabled="sayim.lines.length===0" @click="sayimUygula">
-                  <v-icon left>mdi-check</v-icon> Düzeltmeleri Uygula
-                </v-btn>
-              </v-card-actions>
-            </div>
-          </v-expand-transition>
-        </v-card> -->
+        <!-- SAYIM MODU (isteğe bağlı olarak aç) -->
+        <!-- … -->
       </div>
 
       <v-dialog v-model="dialogs.movement" max-width="560px">
@@ -423,8 +373,8 @@ export default {
       headers: [
         { text:'Ürün', value:'product', width:260 },
         { text:'Tür', value:'type', width:110 },
-        { text:'Kategori', value:'category', width:120 },
-        { text:'Toptancı', value:'supplier', width:140 },
+        { text:'Kategori', value:'categoryId', width:120, sortable:false },
+        { text:'Toptancı', value:'supplierId', width:140, sortable:false },
         { text:'Stok', value:'stock', width:90, align:'end' },
         { text:'Min', value:'minStock', width:100, align:'end' },
         { text:'Birim (KDV)', value:'unit', width:140, align:'end' },
@@ -442,6 +392,15 @@ export default {
         { text:'Sayım', value:'count', align:'end', width:130 },
         { text:'Delta', value:'delta', align:'end', width:110 },
         { text:'', value:'ops', sortable:false, width:60, align:'end' }
+      ],
+
+      /* History tablosu başlıkları (eksikti) */
+      historyHeaders: [
+        { text:'Tarih', value:'date', width:160 },
+        { text:'Adet', value:'qty', align:'end', width:80 },
+        { text:'Sebep', value:'reason', width:160 },
+        { text:'Ref', value:'ref', width:140 },
+        { text:'Not', value:'note' },
       ],
 
       /* Dialoglar */
@@ -526,8 +485,8 @@ export default {
       return this.products.filter(p => {
         const txt = [p.name, p.sku, p.barcode, p.type, p.karat, p.ayar].join(' ').toString().toLowerCase()
         const passQ  = q ? txt.includes(q) : true
-        const passC  = f.categoryId ? p.categoryId === f.categoryId : true
-        const passS  = f.supplierId ? p.supplierId === f.supplierId : true
+        const passC  = f.categoryId ? String(p.categoryId) === String(f.categoryId) : true
+        const passS  = f.supplierId ? String(p.supplierId) === String(f.supplierId) : true
         const passT  = f.type ? p.type === f.type : true
         const passSt = f.inStockOnly ? (p.stock || 0) > 0 : true
 
@@ -553,21 +512,26 @@ export default {
     priceCalc,
     tl (n) { return new Intl.NumberFormat('tr-TR', { style:'currency', currency:'TRY' }).format(n||0) },
     toast (t, c='green') { this.snack = { show:true, color:c, text:t } },
-    categoryName (id) { return (this.categories.find(c=>c.id===id)||{}).name || '-' },
-    supplierName (id) { return (this.suppliers.find(s=>s.id===id)||{}).name || '-' },
+    categoryName (id) { return (this.categories.find(c=>String(c.id)===String(id))||{}).name || '-' },
+    supplierName (id) { return (this.suppliers.find(s=>String(s.id)===String(id))||{}).name || '-' },
     stockColor (p) { const s=Number(p.stock||0), m=Number(p.minStock||0); return s<=0 ? 'red' : s<=m ? 'orange' : 'green' },
     setQuick (mode) { this.quick = mode },
 
     normalizeProducts (arr) {
       return (arr||[]).map(p => {
         const copy = { ...p }
-        copy.stock = Number(copy.stock||0)
-        copy.minStock = Number(copy.minStock||0)
-        copy.cost = Number(copy.cost||0)
-        copy.extras = Number(copy.extras||0)
-        copy.vatPercent = Number(copy.vatPercent||0)
+        copy.stock     = Number(copy.stock || 0)
+        copy.minStock  = Number(copy.minStock || 0)
+        copy.cost      = Number(copy.cost||0)
+        copy.extras    = Number(copy.extras||0)
+        copy.vatPercent= Number(copy.vatPercent||0)
         copy.pricingMode = copy.pricingMode || 'markup'
-        copy.rounding = copy.rounding || 'to10'
+        copy.rounding    = copy.rounding || 'to10'
+
+        // ID alanlarını string'e çek (filtre/sıralama uyumu)
+        copy.categoryId = (copy.categoryId !== undefined && copy.categoryId !== null) ? String(copy.categoryId) : null
+        copy.supplierId = (copy.supplierId !== undefined && copy.supplierId !== null) ? String(copy.supplierId) : null
+
         return copy
       })
     },

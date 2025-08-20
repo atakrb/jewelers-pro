@@ -515,7 +515,7 @@
 </template>
 
 <script>
-import { get, reload, subscribe } from '@/utils/harddata'
+import { get, subscribe } from '@/utils/harddata'
 import { priceCalc } from '@/utils/pricing'
 
 export default {

@@ -142,7 +142,9 @@
             :headers="headers"
             :items="filteredProducts"
             :items-per-page="10"
-            dense fixed-header height="560"
+            dense
+            fixed-header
+            height="560"
             class="px-2 product-table"
         >
           <template v-slot:item.category="{ item }">{{ categoryName(item.categoryId) }}</template>
@@ -172,6 +174,7 @@
             </v-chip>
           </template>
 
+          <!-- OPS -->
           <template v-slot:item.ops="{ item }">
             <v-btn icon small @click="decStock(item)"><v-icon small>mdi-minus</v-icon></v-btn>
             <v-btn icon small @click="incStock(item)"><v-icon small>mdi-plus</v-icon></v-btn>
@@ -224,7 +227,7 @@
 
             <v-row dense>
               <v-col cols="6" md="2"><v-select v-model="productForm.type" :items="typeOptions" dense outlined label="Tür"/></v-col>
-              <v-col cols="6" md="2"><v-text-field v-model="productForm.ayar" dense outlined label="925 ayar"/></v-col>
+              <v-col cols="6" md="2"><v-text-field v-model="productForm.ayar" dense outlined label="Ayar"/></v-col>
               <v-col cols="6" md="2"><v-text-field v-model.number="productForm.gram" type="number" min="0" step="0.01" dense outlined label="Gram (opsiyonel)"/></v-col>
               <v-col cols="6" md="2"><v-text-field v-model.number="productForm.stock" type="number" min="0" dense outlined label="Stok"/></v-col>
               <v-col cols="6" md="2"><v-text-field v-model="productForm.sku" dense outlined label="SKU / Kod"/></v-col>
@@ -359,10 +362,10 @@ export default {
         { title:'Kargo',        icon:'mdi-truck-outline',          to:'kargo' },
       ],
       quickActions: [
-        { key:'N', icon:'mdi-plus',             title:'Yeni Ürün',  subtitle:'Hızlı ekle',     click:()=>this.openProductDialog() },
-        { key:'S', icon:'mdi-filter-check',     title:'Stokta',     subtitle:'Sadece stokta',  click:()=>this.filters.inStockOnly = !this.filters.inStockOnly },
-        { key:'C', icon:'mdi-file-delimited',   title:'CSV',        subtitle:'Dışa aktar',     click:()=>this.exportCSV() },
-        { key:'P', icon:'mdi-printer',          title:'Yazdır',     subtitle:'Ürün tablosu',   click:()=>this.yazdir() },
+        { key:'N', icon:'mdi-plus',           title:'Yeni Ürün',  subtitle:'Hızlı ekle',     click:()=>this.openProductDialog() },
+        { key:'S', icon:'mdi-filter-check',   title:'Stokta',     subtitle:'Sadece stokta',  click:()=>this.filters.inStockOnly = !this.filters.inStockOnly },
+        { key:'C', icon:'mdi-file-delimited', title:'CSV',        subtitle:'Dışa aktar',     click:()=>this.exportCSV() },
+        { key:'P', icon:'mdi-printer',        title:'Yazdır',     subtitle:'Ürün tablosu',   click:()=>this.yazdir() },
       ],
 
       // referanslar (DB'den gelecek)
@@ -373,19 +376,14 @@ export default {
 
       headers: [
         { text: "ID", value: "id", width: 100 },
-        { text: "Ürün", value: "name", width: 100 },
+        { text: "Ürün", value: "name", width: 220 },
         { text: "Toptancı", value: "supplier", width: 160 },
         { text: "Tür", value: "type", width: 110 },
-/*        { text: "Geliş", value: "cost", width: 110, align: "end" },
-        { text: "Ekstra", value: "extras", width: 110, align: "end" },
-        { text: "Kâr %", value: "profitPct", width: 90, align: "end" },
-        { text: "Kâr TL", value: "profitTL", width: 110, align: "end" },
-        { text: "KDV %", value: "vatPercent", width: 90, align: "end" },
-        { text: "Satış (KDV Dhl)", value: "price", width: 150, align: "end" }, */
-        { text: "Stok", value: "stock", width: 20, align: "end" },
+        { text: "Renk", value: "color", width: 110 },        // <-- yeni: renk kolonu (sıralanabilir)
+        { text: "Ölçü", value: "size", width: 80 },         // <-- yeni: ölçü/beden kolonu (sıralanabilir)
+        { text: "Stok", value: "stock", width: 80, align: "end" },
         { text: "Barkod", value: "barcode", width: 140 },
-        //{ text: "SKU", value: "sku", width: 120 },
-        { text: "", value: "ops", sortable: false, width: 140, align: "end" },
+        { text: "", value: "ops", sortable: false, width: 150, align: "end" },
       ],
 
       filters: {
@@ -444,7 +442,7 @@ export default {
       const q = (f.q || "").toLowerCase().trim();
       return (this.products||[]).filter(p => {
         const txt = [
-          p.name, p.barcode, p.sku, p.type, p.ayar, p.color, p.tags
+          p.name, p.barcode, p.sku, p.type, p.ayar, p.color, p.tags, p.size
         ].join(" ").toLowerCase();
 
         const passQ     = q ? txt.includes(q) : true;
@@ -485,7 +483,7 @@ export default {
 
     /* --------- DB -> UI Normalizer --------- */
     normalizeDbProduct(p){
-      const catId = Array.isArray(p.categoryIds) && p.categoryIds.length ? p.categoryIds[0] : null;
+      const catId = Array.isArray(p.categoryIds) && p.categoryIds.length ? p.categoryIds[0] : p.categoryId || null;
       return {
         id: p.id,
         name: p.isim || p.name || "",
@@ -508,8 +506,9 @@ export default {
         rounding: p.rounding || "none",
         barcode: p.barcode || "",
         sku: p.sku || "",
-        size: p.size || "",
+        size: (Array.isArray(p.sizeOptions) && p.sizeOptions.length ? p.sizeOptions[0] : (p.size || "")),
         color: (Array.isArray(p.colorOptions) && p.colorOptions.length ? p.colorOptions[0] : (p.color || "")),
+
         tags: p.tags || "",
         description: p.description || ""
       };
@@ -531,6 +530,26 @@ export default {
     pct(n){ const v = Number(n||0); return isFinite(v) ? v.toFixed(1) + '%' : '-%'; },
     toast(text,color="green"){ this.snack = { show:true, color, text }; },
     newId(){ return Date.now() + Math.floor(Math.random()*1000); },
+    newBarcode(){
+      // 13 haneli: 869 + (timestamp mod) -> string pad
+      const base = '869' + String(Date.now()).slice(-10);
+      return base.slice(0,13);
+    },
+    slug(s){
+      return String(s||'')
+          .toLowerCase()
+          .replace(/ç/g,'c').replace(/ğ/g,'g').replace(/ı/g,'i').replace(/ö/g,'o').replace(/ş/g,'s').replace(/ü/g,'u')
+          .replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');
+    },
+    makeSku(f){
+      const name = (f.name||'urun');
+      const color = (f.color||'').toString();
+      const size = (f.size||'').toString();
+      let parts = [this.slug(name).split('-').slice(0,3).join('-')];
+      if(color) parts.push(this.slug(color));
+      if(size) parts.push(this.slug(size));
+      return parts.join('-').toUpperCase();
+    },
     categoryName(id){ return (this.categories.find(c=>c.id===id)||{}).name || "-"; },
     supplierName(id){ return (this.suppliers.find(s=>s.id===id)||{}).name || "-"; },
     resetFilters(){
@@ -543,6 +562,7 @@ export default {
 
     priceCalc,
 
+
     /* ------------- CRUD (runtime) ------------- */
     openProductDialog(p=null){
       this.productForm = p ? { ...p } : this.emptyForm();
@@ -554,6 +574,15 @@ export default {
         this.toast("Kategori ve Toptancı seçmeden ürün eklenemez.","red");
         return;
       }
+
+      // SKU/Barkod otomatik üret (boşsa)
+      if(!f.sku || !f.sku.trim()){
+        f.sku = this.makeSku(f);
+      }
+      if(!f.barcode || !String(f.barcode).trim()){
+        f.barcode = this.newBarcode();
+      }
+
       const calc = priceCalc(f);
       const finalPrice = calc.priceGross;
 
@@ -563,7 +592,7 @@ export default {
         this.toast("Ürün güncellendi");
       }else{
         this.products.push({ ...f, id: this.newId(), price: finalPrice });
-        this.toast("Ürün eklendi");
+        this.toast(f.color || f.size ? "Varyant eklendi" : "Ürün eklendi");
       }
       this.dialogs.product = false;
     },
@@ -577,11 +606,11 @@ export default {
 
     /* Dışa aktar & Yazdır */
     exportCSV(){
-      const rows = [["id","name","category","supplier","type","ayar","cost","extras","profitPct","profitTL","vatPercent","priceGross","stock","barcode","sku"]];
+      const rows = [["id","name","category","supplier","type","color","size","ayar","cost","extras","profitPct","profitTL","vatPercent","priceGross","stock","barcode","sku"]];
       (this.filteredProducts || []).forEach(p=>{
         const c = priceCalc(p);
         rows.push([
-          p.id, p.name, this.categoryName(p.categoryId), this.supplierName(p.supplierId), p.type, p.ayar,
+          p.id, p.name, this.categoryName(p.categoryId), this.supplierName(p.supplierId), p.type, p.color||"", p.size||"", p.ayar,
           p.cost||0, p.extras||0, (c.profitPct||0).toFixed?.(2) ?? c.profitPct, c.profitTL||0, p.vatPercent||0,
           c.priceGross||0, p.stock||0, p.barcode||"", p.sku||""
         ]);

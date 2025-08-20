@@ -166,7 +166,7 @@
 
             <v-divider />
 
-            <v-card-text class="pa-2">
+            <v-card-text class="">
               <div v-if="cart.length === 0" class="grey--text text-center py-1">
                 Sepet boş. Barkod okut veya arayıp ekle.
               </div>
@@ -176,8 +176,8 @@
                 <v-card
                     v-for="(l, i) in cart"
                     :key="l.key"
-                    outlined
-                    class="cart-item soft-card compact-cart"
+                    style="max-height: 150px"
+                    class="cart-item soft-card compact-cart mt-2"
                 >
                   <div class="item-header">
                     <v-list-item class="pa-0 dense-item">
@@ -198,11 +198,48 @@
                             </div>
                           </div>
                         </div>
-
                         <v-list-item-subtitle class="mt-0 compact-sub">
                           <span class="muted">#{{ l.sku || l.id }}</span>
                           <v-chip x-small class="ml-1" v-if="l.karat">{{ l.karat }}k</v-chip>
                           <v-chip x-small class="ml-1" v-if="l.ayar">{{ l.ayar }}</v-chip>
+                          <v-divider class="mt-2"></v-divider>
+
+                          <!-- RENK SEÇİMİ -->
+                          <span class="mt-3 ml-2 d-inline-flex align-center" v-if="l.colorOptions && l.colorOptions.length">
+                            <span class="muted mr-1">Renk:</span>
+                            <v-chip
+                                v-for="c in l.colorOptions"
+                                :key="c"
+                                x-small
+                                :color="l.color === c ? accent : ''"
+                                :text-color="l.color === c ? 'white' : ''"
+                                class="mr-1 clickable"
+                                outlined
+                                @click="setLineColor(i, c)"
+                            >{{ c }}</v-chip>
+                          </span>
+
+                          <v-chip x-small class="ml-1" v-else-if="l.color" disabled>Renk: {{ l.color }}</v-chip>
+                          <v-chip x-small class="ml-1" v-else disabled>Sabit Renk</v-chip>
+
+                          <!-- BEDEN SEÇİMİ -->
+                          <span class="ml-2 d-inline-flex align-center" v-if="l.sizeOptions && l.sizeOptions.length">
+                            <span class="muted mr-1">Beden:</span>
+                            <v-chip
+                                v-for="s in l.sizeOptions"
+                                :key="s"
+                                x-small
+                                :color="l.size === s ? accent : ''"
+                                :text-color="l.size === s ? 'white' : ''"
+                                class="mr-1 clickable"
+                                outlined
+                                @click="setLineSize(i, s)"
+                            >{{ s }}</v-chip>
+                          </span>
+
+                          <v-chip x-small class="ml-1" v-else-if="l.size" disabled>Beden: {{ l.size }}</v-chip>
+                          <v-chip x-small class="ml-1" v-else disabled>Sabit Beden</v-chip>
+
                           <v-chip
                               x-small
                               :color="l.stok > 0 ? 'green' : 'red'"
@@ -327,7 +364,11 @@
                 </thead>
                 <tbody>
                 <tr v-for="l in receiptLines" :key="l.key">
-                  <td class="caption">{{ l.isim }}</td>
+                  <td class="caption">
+                    {{ l.isim }}
+                    <span v-if="l.color" class="muted"> • {{ l.color }}</span>
+                    <span v-if="l.size" class="muted"> • {{ l.size }}</span>
+                  </td>
                   <td class="text-right caption">{{ l.qty }}</td>
                   <td class="text-right caption">{{ tl(lineGross(l)) }}</td>
                 </tr>
@@ -644,9 +685,17 @@ export default {
       }
     },
     hydrateFromDb(db) {
-      this.settings = db.settings || this.settings;
+      this.settings  = db.settings || this.settings;
       this.platforms = db.platforms || ['Mağaza'];
-      this.products = (db.products || []).map(p => ({ ...p, stok: Number(p.stok ?? p.stock ?? 0) }));
+      this.products  = (db.products || []).map(p => ({
+        ...p,
+        stok: Number(p.stok ?? p.stock ?? 0),
+        // opsiyonları taşı
+        colorOptions: Array.isArray(p.colorOptions) ? p.colorOptions : [],
+        sizeOptions:  Array.isArray(p.sizeOptions)  ? p.sizeOptions  : [],
+        color: p.color || "",
+        size:  p.size  || ""
+      }));
     },
     async reloadDb() { localStorage.removeItem('db_runtime'); await this.loadDb(); this.toast('Veriler yenilendi'); },
 
@@ -690,7 +739,12 @@ export default {
     addByProduct(p) {
       const stok = Number(p.stok ?? p.stock ?? 0);
       if (stok <= 0) return this.toast('Stok yok!', 'red');
-      const base = this.calcPrice(p);
+      const base   = this.calcPrice(p);
+      const colOps = Array.isArray(p.colorOptions) ? p.colorOptions : [];
+      const sizOps = Array.isArray(p.sizeOptions)  ? p.sizeOptions  : [];
+      const color  = colOps.length ? (p.color || colOps[0]) : (p.color || '');
+      const size   = sizOps.length ? (p.size  || sizOps[0]) : (p.size  || '');
+
       this.cart.push({
         key: this.newKey(),
         id: p.id,
@@ -711,6 +765,12 @@ export default {
         rnd: p.rounding || 'none',
         _priceGross: base.priceGross,
         _baseNet: base.baseNet,
+
+        // seçenekler
+        colorOptions: colOps,
+        sizeOptions:  sizOps,
+        color,
+        size,
       });
       this.receipt.approved = false;
     },
@@ -771,8 +831,7 @@ export default {
     aggregatedQty(pid) { return this.cart.filter(x => String(x.id) === String(pid)).reduce((t, x) => t + Number(x.qty || 0), 0); },
 
     // ------- Sepet işlemleri -------
-    duplicateLine(i) { const c = { ...JSON.parse(JSON.stringify(this.cart[i])), key: this.newKey() }; this.cart.splice(i + 1, 0, c); }
-    ,
+    duplicateLine(i) { const c = { ...JSON.parse(JSON.stringify(this.cart[i])), key: this.newKey() }; this.cart.splice(i + 1, 0, c); },
     removeLine(i) { this.cart.splice(i, 1); this.receipt.approved = false; },
     incQty(i) {
       const l = this.cart[i];
@@ -791,6 +850,10 @@ export default {
       l.qty = q; this.receipt.approved = false;
     },
     clearCart() { this.cart = []; this.cartDiscount = { type: null, value: 0 }; this.selectedDiscount = null; this.receipt.approved = false; },
+
+    // seçenek set
+    setLineColor(i, c) { if (!this.cart[i]) return; this.cart[i].color = c; this.receipt.approved = false; },
+    setLineSize(i, s)  { if (!this.cart[i]) return; this.cart[i].size  = s; this.receipt.approved = false; },
 
     // ------- 3 Nokta menü aksiyonları -------
     openEdit(i) {
@@ -858,11 +921,7 @@ export default {
     tl(n) { return new Intl.NumberFormat('tr-TR', { style: 'currency', currency: this.settings.currency || 'TRY' }).format(Number(n) || 0); },
     toast(t, c = 'green') { this.snack = { show: true, color: c, text: t }; },
     newKey() { return `${Date.now()}_${Math.floor(Math.random() * 10000)}`; },
-  },
-  printFis() {
-    this.$nextTick(() => window.print());
   }
-
 };
 </script>
 
@@ -899,8 +958,8 @@ export default {
 
 /* ---- COMPACT CART ---- */
 .compact-cart { padding: 8px 10px; border-radius: 12px; }
-.cart-grid { gap: 8px; }                    /* kartlar arası boşluğu azalt */
-.dense-item { min-height: 44px; }           /* list-item yüksekliği */
+.cart-grid { gap: 8px; }
+.dense-item { min-height: 44px; }
 .compact-title { font-size: 15px; line-height: 1.2; }
 .compact-sub  { margin-top: 2px !important; font-size: 12px; opacity: .75; }
 .price-compact { font-weight: 800; font-size: 18px; line-height: 1.1; margin-top: -2px; }
@@ -909,6 +968,8 @@ export default {
 .compact-cart .v-icon { font-size: 18px; }
 .compact-cart .v-list-item__avatar { margin-right: 8px !important; }
 .compact-cart .v-list-item { padding-top: 2px; padding-bottom: 2px; }
+
+.clickable { cursor: pointer; }
 
 /* GENEL KART */
 .soft-card {
@@ -971,24 +1032,7 @@ export default {
 .theme--dark .seg { border-color: rgba(255,255,255,.16); }
 .seg .v-btn { min-width: 44px; border-radius: 10px !important; }
 
-/* Anim */
-@keyframes float { 0%{transform:translate3d(0,0,0) rotate(0)} 50%{transform:translate3d(2%,-2%,0) rotate(1deg)} 100%{transform:translate3d(0,0,0) rotate(0)} }
-
-/* Sadece fişi yazdır */
-@media print {
-  @page { size: auto; margin: 8mm; }
-  html, body { background: #fff !important; }
-  body * { visibility: hidden !important; }
-  #fisPrint, #fisPrint * { visibility: visible !important; }
-  #fisPrint {
-    position: absolute !important; left: 0; top: 0; width: 100% !important; margin: 0 !important; padding: 0 !important;
-    background: #fff !important; color: #000 !important; box-shadow: none !important; border: 0 !important;
-    -webkit-print-color-adjust: exact; print-color-adjust: exact;
-  }
-  #fisPrint .v-card__actions { display: none !important; }
+.v-list-item__content{
+  padding: 0 !important;
 }
-
-/* Tema değişkenleri */
-.theme--light { --card-border: rgba(0,0,0,.08); --card-bg: rgb(254, 255, 255); --v-primary-base: #1976d2; }
-.theme--dark  { --card-border: rgba(255,255,255,.12); --card-bg: rgba(26,26,26,.72); --v-primary-base: #5865f2; }
 </style>
