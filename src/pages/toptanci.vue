@@ -6,20 +6,16 @@
         :mini-variant.sync="mini"
         :permanent="$vuetify.breakpoint.lgAndUp"
         expand-on-hover
-        app
-        width="280"
+        app width="280"
         class="elevated-drawer"
     >
       <v-list dense>
         <v-list-item two-line class="mb-1">
-          <v-list-item-avatar size="30">
-            <v-icon color="white">mdi-diamond-stone</v-icon>
-          </v-list-item-avatar>
+          <v-list-item-avatar size="30"><v-icon color="white">mdi-diamond-stone</v-icon></v-list-item-avatar>
           <v-list-item-content>
             <v-list-item-title class="font-weight-bold">Jewelers Pro</v-list-item-title>
             <v-list-item-subtitle>Mağaza Paneli</v-list-item-subtitle>
           </v-list-item-content>
-
         </v-list-item>
 
         <v-divider class="mb-2" />
@@ -38,7 +34,6 @@
           <v-btn v-for="c in accents" :key="c" icon small :style="{ color:c }" @click="setAccent(c)">
             <v-icon>mdi-circle</v-icon>
           </v-btn>
-
         </v-list-item>
 
         <v-list-item class="rounded-lg" @click="cycleTheme">
@@ -46,10 +41,12 @@
           <v-list-item-title>Tema</v-list-item-title>
           <v-spacer/><v-chip x-small>{{ themeLabel }}</v-chip>
         </v-list-item>
+
         <v-list-item :to="{ name:'musteriBilgi' }" class="rounded-lg" link>
           <v-list-item-icon><v-icon>mdi-lifebuoy</v-icon></v-list-item-icon>
           <v-list-item-title>Destek</v-list-item-title>
         </v-list-item>
+
         <v-list-item :to="{ name:'urunler' }" class="rounded-lg" link>
           <v-list-item-icon><v-icon>mdi-plus</v-icon></v-list-item-icon>
           <v-list-item-title>Yeni Sipariş Ekle</v-list-item-title>
@@ -64,21 +61,24 @@
         <div class="overline mb-1">JEWELERS PRO</div>
         <h2 class="hero-title">
           {{
-            view==='suppliers' ? 'Toptancılar'
-                : view==='cats' ? (activeSupplier?.name + ' • Kategoriler')
-                    : view==='list' ? (activeSupplier?.name + ' • ' + (activeCat?.name||'Ürünler'))
-                        : pName(activeProduct)
+            view==='pick'      ? 'Atölyeler • Toptancılar'
+                : view==='suppliers' ? entityPlural
+                    : view==='cats'      ? (activeSupplier?.name + ' • Kategoriler')
+                        : view==='list'      ? (activeSupplier?.name + ' • ' + (activeCat?.name||'Ürünler'))
+                            : pName(activeProduct)
           }}
         </h2>
         <div class="hero-sub">
           {{
-            view==='suppliers'
-                ? 'Toptancı kartları: iletişim, son alış, toplam stok. İçine gir kategorileri gör.'
-                : view==='cats'
-                    ? 'Bu toptancıdan aldığın kategoriler — stok & ürün sayıları; kategori ekle/çıkar.'
-                    : view==='list'
-                        ? 'Seçilen kategorideki ürünler — ürün ekle/düzenle/sil ve detaya gir.'
-                        : 'Tedarikçi, stok, varyant ve parasal detaylar.'
+            view==='pick'
+                ? 'Önce kaynak türünü seç: Atölye ya da Toptancı.'
+                : view==='suppliers'
+                    ? (entityPlural + ' kartları: iletişim, son alış, toplam stok. İçine gir kategorileri gör.')
+                    : view==='cats'
+                        ? 'Bu ' + entitySingularLower + 'dan aldığın kategoriler — stok & ürün sayıları.'
+                        : view==='list'
+                            ? 'Seçilen kategorideki ürünler — ürün ekle/düzenle/sil ve detaya gir.'
+                            : 'Tedarikçi/atölye, stok, varyant ve parasal detaylar.'
           }}
         </div>
       </div>
@@ -88,15 +88,11 @@
     <v-container class="pt-4 pb-0">
       <v-row dense align="center">
         <v-col cols="12" md="6">
-          <v-text-field
-              v-model="search"
-              dense outlined clearable hide-details
-              :label="searchLabel"
-              prepend-inner-icon="mdi-magnify"
-          />
+          <v-text-field v-model="search" dense outlined clearable hide-details
+                        :label="searchLabel" prepend-inner-icon="mdi-magnify"/>
         </v-col>
         <v-col cols="12" md="6" class="d-flex justify-end">
-          <v-btn v-if="view!=='suppliers'" class="glass-btn mr-2" @click="goUp">
+          <v-btn v-if="view!=='pick'" class="glass-btn mr-2" @click="goUp">
             <v-icon left small>mdi-arrow-left</v-icon> Geri
           </v-btn>
           <v-btn class="glass-btn mr-2" @click="refreshDb">
@@ -105,7 +101,7 @@
 
           <!-- Üst sağ aksiyonlar (CRUD) -->
           <v-btn v-if="view==='suppliers'" :color="accent" dark @click="openSupplierDialog()">
-            <v-icon left small>mdi-account-plus</v-icon> Yeni Toptancı
+            <v-icon left small>mdi-account-plus</v-icon> Yeni {{ entitySingular }}
           </v-btn>
           <v-btn v-if="view==='cats' && activeSupplier" :color="accent" dark @click="openCategoryDialog()">
             <v-icon left small>mdi-shape-outline</v-icon> Yeni Kategori
@@ -119,8 +115,36 @@
 
     <!-- İÇERİK -->
     <v-container class="py-4">
-      <!-- 1) TOPTANCI KARTLARI -->
-      <v-row v-if="view==='suppliers'" dense>
+      <!-- 0) TÜRLÜ SEÇİM EKRANI -->
+      <v-row v-if="view==='pick'" dense>
+        <v-col cols="12" sm="6">
+          <v-card class="soft-card heroish select-card" outlined @click="chooseParty('atelier')">
+            <div class="card-hero-glow"></div>
+            <v-card-title class="py-4">
+              <v-icon class="mr-3" size="60">mdi-hammer-wrench</v-icon>
+              <div>
+                <div class="title-1 font-weight-bold">Atölyeler</div>
+                <div class="caption muted">İmalat / işçilik yapan partnerler</div>
+              </div>
+            </v-card-title>
+          </v-card>
+        </v-col>
+        <v-col cols="12" sm="6">
+          <v-card class="soft-card heroish select-card" outlined @click="chooseParty('supplier')">
+            <div class="card-hero-glow"></div>
+            <v-card-title class="py-4">
+              <v-icon class="mr-3" size="60">mdi-storefront-outline</v-icon>
+              <div>
+                <div class="title-1 font-weight-bold">Toptancılar</div>
+                <div class="caption muted">Alım yaptığın tedarikçiler</div>
+              </div>
+            </v-card-title>
+          </v-card>
+        </v-col>
+      </v-row>
+
+      <!-- 1) LİSTE: PARTİ (ATÖLYE / TOPTANCI) KARTLARI -->
+      <v-row v-else-if="view==='suppliers'" dense>
         <v-col v-for="s in suppliersFiltered" :key="s.id" cols="12" sm="6" md="4" lg="4">
           <v-card class="soft-card heroish supplier-card" outlined @click="openSupplier(s)">
             <div class="card-hero-glow"></div>
@@ -188,7 +212,7 @@
         </v-col>
       </v-row>
 
-      <!-- 2) AKTİF TOPTANCININ KATEGORİLERİ -->
+      <!-- 2) KATEGORİLER -->
       <v-row v-else-if="view==='cats'" dense>
         <v-col v-for="cat in supplierCatsFiltered" :key="cat.id" cols="12" sm="6" md="4" lg="3">
           <v-card class="soft-card category-card heroish" outlined @click="openCat(cat)">
@@ -201,7 +225,6 @@
                 <div class="caption truncate">{{ cat.description || '—' }}</div>
               </div>
               <v-spacer/>
-              <!-- Kategori menüsü -->
               <v-menu bottom right offset-y @click.stop.prevent>
                 <template v-slot:activator="{ on, attrs }">
                   <v-btn icon small class="ml-2" v-bind="attrs" v-on="on" @click.stop.prevent>
@@ -215,7 +238,7 @@
                   </v-list-item>
                   <v-list-item v-if="isCatLinkedToSupplier(cat)" @click.stop.prevent="unlinkCategoryFromSupplier(cat)">
                     <v-list-item-icon><v-icon>mdi-link-off</v-icon></v-list-item-icon>
-                    <v-list-item-title>Toptancıdan Kaldır</v-list-item-title>
+                    <v-list-item-title>{{ entitySingular }}’dan Kaldır</v-list-item-title>
                   </v-list-item>
                   <v-list-item @click.stop.prevent="removeCategoryGlobal(cat)">
                     <v-list-item-icon><v-icon>mdi-delete</v-icon></v-list-item-icon>
@@ -235,7 +258,7 @@
         </v-col>
 
         <v-col cols="12" v-if="!supplierCatsFiltered.length">
-          <v-alert type="info" outlined>Bu toptancıya ait kategori yok. Üstten <strong>Yeni Kategori</strong> ekleyebilirsin.</v-alert>
+          <v-alert type="info" outlined>Bu {{ entitySingularLower }}ya ait kategori yok. Üstten <strong>Yeni Kategori</strong> ekleyebilirsin.</v-alert>
         </v-col>
       </v-row>
 
@@ -263,7 +286,6 @@
                       </div>
                       <v-spacer/>
 
-                      <!-- Ürün menüsü -->
                       <v-menu bottom left offset-y @click.stop.prevent>
                         <template v-slot:activator="{ on, attrs }">
                           <v-btn icon small v-bind="attrs" v-on="on" @click.stop.prevent>
@@ -284,7 +306,7 @@
                     </div>
 
                     <div class="prod-bottom">
-                      <div class="caption muted">Tedarikçi</div>
+                      <div class="caption muted">{{ entitySingular }}</div>
                       <div class="supplier-name truncate">{{ supplierName(p.supplierId) }}</div>
                       <div class="caption muted mt-1">Son alış: <strong>{{ lastBuySummary(p.id) || '-' }}</strong></div>
                     </div>
@@ -341,10 +363,10 @@
                   <v-simple-table dense>
                     <tbody>
                     <tr>
-                      <td>Tedarikçi</td>
+                      <td>{{ entitySingular }}</td>
                       <td class="text-right">
                         <span class="font-weight-bold">{{ supplierName(activeProduct.supplierId) }}</span>
-                        <div class="caption">{{ supplierPhone(activeProduct.supplierId) || '' }}</div>
+                        <div class="caption">{{ supplierPhoneFromProduct(activeProduct) || '' }}</div>
                       </td>
                     </tr>
                     <tr><td>Son Alış</td><td class="text-right">{{ lastBuySummary(activeProduct.id) || '-' }}</td></tr>
@@ -353,7 +375,7 @@
                   </v-simple-table>
 
                   <div class="mt-2 d-flex justify-end">
-                    <v-btn v-if="supplierPhone(activeProduct.supplierId)" small class="glass-btn mr-2" :href="waLink(activeProduct)" target="_blank">
+                    <v-btn v-if="supplierPhoneFromProduct(activeProduct)" small class="glass-btn mr-2" :href="waLink(activeProduct)" target="_blank">
                       <v-icon left small>mdi-whatsapp</v-icon> WhatsApp
                     </v-btn>
                     <v-btn small :color="accent" dark :href="waOrderLink(activeProduct)" target="_blank">
@@ -411,10 +433,10 @@
     </v-container>
 
     <!-- DİYALOGLAR -->
-    <!-- Toptancı -->
+    <!-- Parti (Toptancı/Atölye) -->
     <v-dialog v-model="dialogs.supplier" max-width="560px">
       <v-card>
-        <v-card-title class="subtitle-1 font-weight-bold">{{ supplierForm.id ? 'Toptancı Düzenle' : 'Yeni Toptancı' }}</v-card-title>
+        <v-card-title class="subtitle-1 font-weight-bold">{{ supplierForm.id ? (entitySingular + ' Düzenle') : ('Yeni ' + entitySingular) }}</v-card-title>
         <v-card-text>
           <v-form ref="supplierFormRef">
             <v-text-field v-model="supplierForm.name" label="Ad" dense outlined required />
@@ -440,14 +462,12 @@
           <v-form ref="categoryFormRef">
             <v-text-field v-model="categoryForm.name" label="Ad" dense outlined required />
             <v-text-field v-model="categoryForm.description" label="Açıklama" dense outlined />
-            <v-select
-                v-model="categoryForm.iconId"
-                :items="iconOptions"
-                item-text="label" item-value="value"
-                dense outlined label="İkon"
-            />
+            <v-select v-model="categoryForm.iconId" :items="iconOptions" item-text="label" item-value="value" dense outlined label="İkon"/>
             <v-text-field v-model="categoryForm.color" type="color" label="Renk" hide-details dense outlined />
-            <v-checkbox v-if="activeSupplier" v-model="categoryForm.linkToSupplier" label="Bu kategoriyi aktif toptancıya bağla" hide-details />
+            <v-checkbox v-if="activeSupplier"
+                        v-model="categoryForm.linkToSupplier"
+                        :label="'Bu kategoriyi aktif ' + entitySingularLower + 'ya bağla'"
+                        hide-details />
           </v-form>
         </v-card-text>
         <v-card-actions class="px-4 pb-4">
@@ -474,7 +494,7 @@
                     v-model="productForm.supplierId"
                     :items="suppliersSelect"
                     item-text="name" item-value="id"
-                    dense outlined label="Toptancı"
+                    dense outlined :label="entitySingular"
                 />
               </v-col>
               <v-col cols="12" md="6">
@@ -519,7 +539,7 @@ import { get, subscribe } from '@/utils/harddata'
 import { priceCalc } from '@/utils/pricing'
 
 export default {
-  name: 'ToptanciOdakliSayfa',
+  name: 'AtolyeToptanciSayfa',
   data(){
     return {
       // Tema & nav
@@ -540,15 +560,14 @@ export default {
       ],
 
       // Veri
-      categories: [],
-      products:   [],
-      suppliers:  [],
-      stockMoves: [],
+      categories: [], products: [], suppliers: [], stockMoves: [],
+      ateliers: [],   // YENİ: atölyeler
 
       // UI state
-      view: 'suppliers', // suppliers -> cats -> list -> detail
+      partyType: null,  // 'supplier' | 'atelier'
+      view: 'pick',     // pick -> suppliers -> cats -> list -> detail
       search: '',
-      activeSupplier: null,
+      activeSupplier: null, // seçilmiş parti (hem toptancı hem atölye için kullanıyoruz)
       activeCat: null,
       activeProduct: null,
 
@@ -570,30 +589,39 @@ export default {
     subscribe && subscribe('products',   this.hydrate)
     subscribe && subscribe('suppliers',  this.hydrate)
     subscribe && subscribe('stockMovements', this.hydrate)
+    subscribe && subscribe('ateliers',   this.hydrate) // varsa dinle
   },
 
   computed:{
     themeLabel(){ return this.$vuetify.theme.dark ? 'Koyu' : 'Açık' },
 
+    // Dinamik metinler
+    entitySingular(){ return this.partyType==='atelier' ? 'Atölye' : 'Toptancı' },
+    entitySingularLower(){ return this.partyType==='atelier' ? 'atölye' : 'toptancı' },
+    entityPlural(){ return this.partyType==='atelier' ? 'Atölyeler' : 'Toptancılar' },
+
+    currentPartyList(){ return this.partyType==='atelier' ? (this.ateliers||[]) : (this.suppliers||[]) },
+
     searchLabel(){
-      if(this.view==='suppliers') return 'Toptancı Ara (ad, tel, e-posta, adres)'
-      if(this.view==='cats')      return 'Kategori Ara (ad/açıklama)'
+      if(this.view==='pick')       return 'Atölye veya Toptancı seç'
+      if(this.view==='suppliers')  return `${this.entitySingular} Ara (ad, tel, e-posta, adres)`
+      if(this.view==='cats')       return 'Kategori Ara (ad/açıklama)'
       return 'Ürün Ara (ad, sku, barkod, ayar)'
     },
 
+    // Parti listesi (filtreli) – şablon ismi bozulmasın diye aynısını döndürüyorum
     suppliersFiltered(){
       const q=(this.search||'').toLowerCase().trim()
-      const arr = this.suppliers || []
+      const arr = this.currentPartyList
       if(!q) return arr
       return arr.filter(s => [s.name,s.phone,s.email,s.address].join(' ').toLowerCase().includes(q))
     },
 
-    // Aktif toptancıdan görünen kategoriler (ürünlerden + manuel bağlılar)
+    // Aktif partinin kategorileri
     supplierCats(){
       if(!this.activeSupplier) return []
       const sId = String(this.activeSupplier.id)
       const prods = (this.products||[]).filter(p => String(p.supplierId)===sId)
-
       const catSet = new Set(this.activeSupplier?.categoryIds?.map(String) || [])
       prods.forEach(p=>{
         if(Array.isArray(p.categoryIds) && p.categoryIds.length) p.categoryIds.forEach(id=>catSet.add(String(id)))
@@ -607,14 +635,15 @@ export default {
       return this.supplierCats.filter(c => (c.name + ' ' + (c.description||'')).toLowerCase().includes(q))
     },
 
-    // Aktif toptancı + kategori altındaki ürünler
+    // Aktif parti + kategori altındaki ürünler
     productsOfSelected(){
       if(!this.activeSupplier || !this.activeCat) return []
       const sId = String(this.activeSupplier.id)
       const cId = String(this.activeCat.id)
       return (this.products||[]).filter(p=>{
-        const okSupplier = String(p.supplierId)===sId
-        const ids = Array.isArray(p.categoryIds) ? p.categoryIds.map(String) : (p.categoryId!=null ? [String(p.categoryId)] : [])
+        const okSupplier = String(p.supplierId)===sId  // supplierId burada "partiId"
+        const ids = Array.isArray(p.categoryIds) ? p.categoryIds.map(String)
+            : (p.categoryId!=null ? [String(p.categoryId)] : [])
         const okCat = ids.includes(cId)
         return okSupplier && okCat
       })
@@ -628,25 +657,15 @@ export default {
       })
     },
 
-    // Select listeleri
-    suppliersSelect(){ return (this.suppliers||[]).map(s=>({ id:s.id, name:s.name })) },
+    suppliersSelect(){ return this.currentPartyList.map(s=>({ id:s.id, name:s.name })) },
     categoriesSelect(){ return (this.categories||[]).map(c=>({ id:c.id, name:c.name })) },
 
-    // İkon opsiyonları
     iconOptions(){
       return [
         { label:'Elmas', value:'diamond' }, { label:'Altın', value:'gold' }, { label:'Gümüş', value:'silver' },
         { label:'Yüzük', value:'ring' }, { label:'Kolye', value:'necklace' }, { label:'Küpe', value:'earring' },
         { label:'Bileklik', value:'bracelet' }, { label:'Set', value:'set' }
       ]
-    },
-
-    // Accent temelli chip rengi örneği
-    chipStyleAccent(){
-      const {h,s} = this.hexToHsl(this.accent)
-      const dm = this.$vuetify.theme.dark
-      const tone = `hsl(${(h+10)%360} ${Math.min(85,Math.max(35,s+10))}% ${dm?30:92}%)`
-      return { backgroundColor: tone, color: dm ? '#fff' : '#111' }
     },
   },
 
@@ -655,23 +674,24 @@ export default {
     setAccent(c){ this.accent=c; localStorage.setItem('jp_accent', c) },
     cycleTheme(){ this.$vuetify.theme.dark = !this.$vuetify.theme.dark },
 
+    /* Başlangıç seçimi */
+    chooseParty(type){ this.partyType = type; this.view='suppliers'; this.search='' },
+
     /* Veri çek / kaydet */
     hydrate(){
-      // harddata varsa oradan al; yoksa localStorage yedek
-      const loc = (k, d=[]) => {
-        try{ const v = localStorage.getItem(k); return v ? JSON.parse(v) : d }catch{ return d }
-      }
+      const loc = (k, d=[]) => { try{ const v = localStorage.getItem(k); return v ? JSON.parse(v) : d }catch{ return d } }
       this.categories = get?.('categories') || loc('categories', [])
       this.products   = get?.('products')   || loc('products',   [])
       this.suppliers  = get?.('suppliers')  || loc('suppliers',  [])
+      this.ateliers   = get?.('ateliers')   || loc('ateliers',   [])   // YENİ
       this.stockMoves = get?.('stockMovements') || loc('stockMovements', [])
     },
     persistAll(){
-      // Basit local persist (projede backend yoksa kalıcı olur)
       try{
         localStorage.setItem('categories', JSON.stringify(this.categories))
         localStorage.setItem('products',   JSON.stringify(this.products))
         localStorage.setItem('suppliers',  JSON.stringify(this.suppliers))
+        localStorage.setItem('ateliers',   JSON.stringify(this.ateliers))
       }catch(e){ console.warn('persist error', e) }
     },
     async refreshDb(){
@@ -681,6 +701,7 @@ export default {
 
     /* NAV */
     goUp(){
+      if(this.view==='suppliers'){ this.view='pick'; this.activeSupplier=null; this.search=''; return }
       if(this.view==='cats'){ this.view='suppliers'; this.activeSupplier=null; this.search=''; return }
       if(this.view==='list'){ this.view='cats'; this.activeCat=null; this.search=''; return }
       if(this.view==='detail'){ this.view='list'; this.activeProduct=null; return }
@@ -700,7 +721,7 @@ export default {
     pName(p){ return p?.isim || p?.name || '' },
     pStock(p){ return Number(p?.stok ?? p?.stock ?? 0) },
 
-    /* Toptancı özetleri */
+    /* Özetler */
     lastPurchaseText(s){
       const items = Array.isArray(s.items) ? s.items.filter(i=>i.buyDate) : []
       if(!items.length) return '-'
@@ -734,9 +755,9 @@ export default {
     },
     stockChipColor(n){
       const v = Number(n)||0
-      if(v<=0) return 'red darken-1'      // bitti
-      if(v<=5) return 'orange darken-1'   // az
-      return 'green darken-1'             // iyi
+      if(v<=0) return 'red darken-1'
+      if(v<=5) return 'orange darken-1'
+      return 'green darken-1'
     },
     catHeaderStyle(cat){
       const base = cat?.color || this.accent
@@ -775,16 +796,8 @@ export default {
       }
       return {h, s:Math.round(s*100), l:Math.round(l*100)}
     },
-    chipStyle(cat, key){
-      const {h,s} = this.hexToHsl(cat?.color || this.accent)
-      const dm = this.$vuetify.theme.dark
-      const tone = key==='count'
-          ? `hsl(${(h+10)%360} ${Math.min(85,Math.max(35,s+10))}% ${dm?30:92}%)`
-          : `hsl(${(h-10+360)%360} ${Math.min(85,Math.max(35,s+5))}% ${dm?26:90}%)`
-      return { backgroundColor: tone, color: dm ? '#fff' : '#111' }
-    },
 
-    /* Kategori özetleri (AKTİF TOPTANCI İÇİN) */
+    /* Kategori özetleri (AKTİF PARTİ İÇİN) */
     catCountsForSupplier(cat){
       if(!this.activeSupplier) return { products: 0, stock: 0 }
       const sId = String(this.activeSupplier.id)
@@ -820,19 +833,27 @@ export default {
       if(!this.activeSupplier) return
       this.activeSupplier.categoryIds = (this.activeSupplier.categoryIds||[]).filter(id => String(id)!==String(cat.id))
       this.persistAll()
-      this.toast('Kategori toptancıdan kaldırıldı')
+      this.toast('Kategori kaldırıldı')
     },
 
-    /* Ürün yardımcıları */
-    supplierName(id){ const s=(this.suppliers||[]).find(x=>String(x.id)===String(id)); return s?.name || '—' },
-    supplierPhone(id){ const s=(this.suppliers||[]).find(x=>String(x.id)===String(id)); return (s?.phone||'').trim() },
+    /* Parti yardımcıları */
+    supplierName(id){
+      const s = this.currentPartyList.find(x=>String(x.id)===String(id))
+      return s?.name || '—'
+    },
+    supplierPhone(id){
+      const s = this.currentPartyList.find(x=>String(x.id)===String(id))
+      return (s?.phone||'').trim()
+    },
+    supplierPhoneFromProduct(p){ return this.supplierPhone(p?.supplierId) },
+
     waLink(p){
-      const phone=(this.supplierPhone(p?.supplierId)||'').replace(/\D/g,'')
+      const phone=(this.supplierPhoneFromProduct(p)||'').replace(/\D/g,'')
       const text=encodeURIComponent(`Merhaba, ${this.pName(p)} (#${p?.sku||p?.id}) hakkında bilgi rica ediyorum.`)
       return phone ? `https://wa.me/${phone}?text=${text}` : '#'
     },
     waOrderLink(p){
-      const phone=(this.supplierPhone(p?.supplierId)||'').replace(/\D/g,'')
+      const phone=(this.supplierPhoneFromProduct(p)||'').replace(/\D/g,'')
       const text=encodeURIComponent(`Merhaba, ${this.pName(p)} (#${p?.sku||p?.id}) için sipariş vermek istiyorum.`)
       return phone ? `https://wa.me/${phone}?text=${text}` : '#'
     },
@@ -848,9 +869,7 @@ export default {
 
     /* Hareketler */
     movementTimeline(productId){
-      return (this.stockMoves||[])
-          .filter(m => String(m.productId)===String(productId))
-          .sort((a,b)=> new Date(b.date)-new Date(a.date))
+      return (this.stockMoves||[]).filter(m => String(m.productId)===String(productId)).sort((a,b)=> new Date(b.date)-new Date(a.date))
     },
     lastBuySummary(productId){
       const ins=(this.stockMoves||[]).filter(m => String(m.productId)===String(productId) && m.type==='in')
@@ -868,7 +887,7 @@ export default {
     /* ==== CRUD ==== */
     newId(){ return Date.now() + Math.floor(Math.random()*100000) },
 
-    // Toptancı
+    // Parti (toptancı/atölye)
     openSupplierDialog(s=null){
       this.supplierForm = s
           ? { id:s.id, name:s.name||'', logo:s.logo||'', phone:s.phone||'', email:s.email||'', address:s.address||'', notes:s.notes||'', categoryIds:[...(s.categoryIds||[])] }
@@ -877,29 +896,30 @@ export default {
     },
     saveSupplier(){
       const f = this.supplierForm
-      if(!f.name){ this.toast('Toptancı adı zorunlu','red'); return }
+      if(!f.name){ this.toast(`${this.entitySingular} adı zorunlu`,'red'); return }
+      const key = this.partyType==='atelier' ? 'ateliers' : 'suppliers'
       if(f.id){
-        const i = this.suppliers.findIndex(x=>x.id===f.id)
-        if(i>-1) this.$set(this.suppliers, i, { ...this.suppliers[i], ...f })
-        if(this.activeSupplier && this.activeSupplier.id===f.id) this.activeSupplier = this.suppliers[i]
-        this.toast('Toptancı güncellendi')
+        const i = this[key].findIndex(x=>x.id===f.id)
+        if(i>-1) this.$set(this[key], i, { ...this[key][i], ...f })
+        if(this.activeSupplier && this.activeSupplier.id===f.id) this.activeSupplier = this[key][i]
+        this.toast(`${this.entitySingular} güncellendi`)
       }else{
         const obj = { ...f, id:this.newId(), items:[], invoices:[], categoryIds:[] }
-        this.suppliers.unshift(obj)
-        this.toast('Toptancı eklendi')
+        this[key].unshift(obj)
+        this.toast(`${this.entitySingular} eklendi`)
       }
       this.persistAll()
       this.dialogs.supplier=false
     },
     removeSupplier(s){
       if(!confirm(`"${s.name}" silinsin mi?`)) return
-      // Bu toptancıdaki ürünleri de kaldır?
+      const key = this.partyType==='atelier' ? 'ateliers' : 'suppliers'
       const sid = String(s.id)
       this.products = (this.products||[]).filter(p => String(p.supplierId)!==sid)
-      this.suppliers = this.suppliers.filter(x => x.id!==s.id)
+      this[key] = this[key].filter(x => x.id!==s.id)
       if(this.activeSupplier && String(this.activeSupplier.id)===sid) { this.activeSupplier=null; this.view='suppliers' }
       this.persistAll()
-      this.toast('Toptancı silindi','red')
+      this.toast(`${this.entitySingular} silindi`,'red')
     },
 
     // Kategori
@@ -920,7 +940,6 @@ export default {
         const id = f.iconId || 'custom-'+this.newId()
         const obj = { id, name:f.name, description:f.description||'', color:f.color }
         this.categories.push(obj)
-        // Aktif toptancıya bağla (görünsün)
         if(this.activeSupplier && f.linkToSupplier){
           const arr = new Set(this.activeSupplier.categoryIds || [])
           arr.add(String(id))
@@ -934,15 +953,14 @@ export default {
     removeCategoryGlobal(cat){
       if(!confirm(`"${cat.name}" KATEGORİSİ global olarak silinsin mi? (Ürünlerden kaldırılacak)`)) return
       const cid = String(cat.id)
-      // Ürünlerden kaldır
       this.products = (this.products||[]).map(p=>{
         const ids = Array.isArray(p.categoryIds) ? p.categoryIds.map(String).filter(x=>x!==cid) : []
         const single = (p.categoryId!=null && String(p.categoryId)===cid) ? null : p.categoryId
         return { ...p, categoryIds: ids, categoryId: single }
       })
-      // Toptancı bağlantılarından kaldır
-      this.suppliers = (this.suppliers||[]).map(s=> ({ ...s, categoryIds:(s.categoryIds||[]).filter(id=>String(id)!==cid) }))
-      // Kategorilerden sil
+      ;['suppliers','ateliers'].forEach(k=>{
+        this[k] = (this[k]||[]).map(s=> ({ ...s, categoryIds:(s.categoryIds||[]).filter(id=>String(id)!==cid) }))
+      })
       this.categories = (this.categories||[]).filter(c=>String(c.id)!==cid)
       if(this.activeCat && String(this.activeCat.id)===cid){ this.activeCat=null; this.view='cats' }
       this.persistAll()
@@ -951,20 +969,19 @@ export default {
 
     // Ürün
     openProductDialog(p=null){
-      const preSup = this.activeSupplier?.id || (this.suppliers[0]?.id ?? null)
+      const list = this.currentPartyList
+      const preSup = this.activeSupplier?.id || (list[0]?.id ?? null)
       const preCat = this.activeCat?.id || (this.categories[0]?.id ?? null)
       this.productForm = p ? {
         id: p.id, name:p.name||p.isim||'', sku:p.sku||'', barcode:p.barcode||'',
-        supplierId: p.supplierId ?? preSup,
+        supplierId: p.supplierId ?? preSup, // partiId
         categoryId: (Array.isArray(p.categoryIds) && p.categoryIds.length) ? p.categoryIds[0] : (p.categoryId ?? preCat),
         karat:p.karat||'', ayar:p.ayar||'', stock: Number(p.stock ?? p.stok ?? 0),
         type:p.type||'', colors:(p.colorOptions||[]).join(', '),
         cost:Number(p.cost||0), extras:Number(p.extras||0), vatPercent:Number(p.vatPercent??20),
         priceManual: p.priceManual || ''
       } : {
-        id:null, name:'', sku:'', barcode:'',
-        supplierId: preSup,
-        categoryId: preCat,
+        id:null, name:'', sku:'', barcode:'', supplierId: preSup, categoryId: preCat,
         karat:'', ayar:'', stock:0, type:'', colors:'', cost:0, extras:0, vatPercent:20, priceManual:''
       }
       this.dialogs.product=true
@@ -972,15 +989,14 @@ export default {
     saveProduct(){
       const f=this.productForm
       if(!f.name){ this.toast('Ürün adı zorunlu','red'); return }
-      if(!f.supplierId){ this.toast('Toptancı seç','red'); return }
+      if(!f.supplierId){ this.toast(`${this.entitySingular} seç`,'red'); return }
       if(!f.categoryId){ this.toast('Kategori seç','red'); return }
 
       const payload = {
         id: f.id || this.newId(),
         name: f.name, sku:f.sku||'', barcode:f.barcode||'',
-        supplierId: f.supplierId,
-        categoryId: f.categoryId,
-        categoryIds: [f.categoryId], // uyumluluk
+        supplierId: f.supplierId,                 // partiId
+        categoryId: f.categoryId, categoryIds: [f.categoryId],
         karat:f.karat||'', ayar:f.ayar||'', stock:Number(f.stock||0),
         type:f.type||'',
         colorOptions: (f.colors||'').split(',').map(x=>x.trim()).filter(Boolean),
@@ -994,7 +1010,6 @@ export default {
         this.toast('Ürün güncellendi')
       }else{
         this.products.unshift(payload)
-        // kategori, aktif toptancıya bağlı değilse bağla
         if(this.activeSupplier){
           const arr = new Set(this.activeSupplier.categoryIds || [])
           arr.add(String(f.categoryId))
@@ -1032,7 +1047,10 @@ export default {
   background: rgba(24,24,24,.7);
 }
 
-/* hero benzeri kart arkaplanı */
+/* seçim kartları */
+.select-card{ cursor:pointer; min-height:110px }
+
+/* heroish */
 .heroish{ position:relative; overflow:hidden; }
 .card-hero-glow{
   position:absolute; inset:-30%;
@@ -1054,27 +1072,23 @@ export default {
 }
 
 /* Hero */
-.hero{
-  position:relative; height:120px; overflow:hidden;
-  border-bottom:1px solid rgba(0,0,0,.04);
-}
-.theme--light .hero{ background:linear-gradient(180deg,#ffffff,#fafafa); }
-.theme--dark  .hero{ background:linear-gradient(180deg,#0f1115,#0a0c10); }
+.hero{ position:relative; height:120px; overflow:hidden; border-bottom:1px solid rgba(0,0,0,.04) }
+.theme--light .hero{ background:linear-gradient(180deg,#ffffff,#fafafa) }
+.theme--dark  .hero{ background:linear-gradient(180deg,#0f1115,#0a0c10) }
 .hero-glow{
   position:absolute; inset:-30%;
   background:
       radial-gradient(90% 60% at 30% 30%, var(--accent) 0%, transparent 60%),
       radial-gradient(90% 60% at 90% 20%, rgba(99,102,241,.55) 0%, transparent 60%),
       linear-gradient(180deg, rgba(255,255,255,.35), transparent 60%);
-  animation:float 16s ease-in-out infinite;
-  filter:blur(42px); opacity:.55;
+  animation:float 16s ease-in-out infinite; filter:blur(42px); opacity:.55;
 }
-.theme--dark .hero-glow{ opacity:.35; }
-.hero-content{ position:relative; height:100%; display:flex; flex-direction:column; justify-content:center; padding:12px 24px; }
-.hero-title{ margin:0; font-weight:800; letter-spacing:.2px; }
+.theme--dark .hero-glow{ opacity:.35 }
+.hero-content{ position:relative; height:100%; display:flex; flex-direction:column; justify-content:center; padding:12px 24px }
+.hero-title{ margin:0; font-weight:800; letter-spacing:.2px }
 .hero-sub{ opacity:.8 }
 
-/* Kart ölçüleri */
+/* kart ölçüleri */
 .supplier-card{ cursor:pointer; min-height: 200px; }
 .category-card{ cursor:pointer; min-height: 100px; }
 .product-card{ cursor:pointer; padding:12px; min-height: 170px; }
@@ -1091,7 +1105,7 @@ export default {
 .muted{ opacity:.65 }
 .prod-bottom{ margin-top:8px }
 
-/* Timeline spacing fix */
+/* Timeline spacing */
 .v-timeline{ padding-top:0 }
 
 /* Anim */

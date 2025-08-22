@@ -113,9 +113,7 @@
             <v-select v-model="filters.supplierId" :items="suppliers.map(s=>({text:s.name,value:s.id}))"
                       dense outlined clearable hide-details label="Toptancı"/>
           </v-col>
-          <v-col cols="6" md="2">
-            <v-select v-model="filters.type" :items="typeOptions" dense outlined clearable hide-details label="Tür"/>
-          </v-col>
+
           <v-col cols="6" md="2" class="d-flex align-center">
             <v-checkbox v-model="filters.inStockOnly" hide-details label="Stokta"/>
           </v-col>
@@ -135,7 +133,7 @@
 
       <div id="stockPrint">
         <v-row dense>
-          <v-col cols="12" md="2">
+          <v-col cols="12" md="1">
             <v-card outlined class="kpi"><v-card-text class="py-3">
               <div class="caption">Ürün</div>
               <div class="headline font-weight-bold">{{ filtered.length }}</div>
@@ -147,7 +145,7 @@
               <div class="headline font-weight-bold">{{ totalUnits }}</div>
             </v-card-text></v-card>
           </v-col>
-          <v-col cols="12" md="2">
+          <v-col cols="12" md="3">
             <v-card outlined class="kpi"><v-card-text class="py-3">
               <div class="caption">Stok Değeri (Baz)</div>
               <div class="headline font-weight-bold">{{ tl(stockValueBase) }}</div>
@@ -372,11 +370,9 @@ export default {
       /* Tablo başlıkları */
       headers: [
         { text:'Ürün', value:'product', width:260 },
-        { text:'Tür', value:'type', width:110 },
         { text:'Kategori', value:'categoryId', width:120, sortable:false },
         { text:'Toptancı', value:'supplierId', width:140, sortable:false },
         { text:'Stok', value:'stock', width:90, align:'end' },
-        { text:'Min', value:'minStock', width:100, align:'end' },
         { text:'Birim (KDV)', value:'unit', width:140, align:'end' },
         { text:'', value:'data-table-expand', sortable:false, align:'end' }
       ],
